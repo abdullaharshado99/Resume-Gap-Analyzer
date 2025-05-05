@@ -1,4 +1,7 @@
-langchain
-openai
-langchain_anthropic
+dotenv
 fastapi
+jupyter
+langchain
+langchain_groq
+langchain_community
+openai
