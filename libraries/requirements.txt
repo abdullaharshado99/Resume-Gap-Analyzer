@@ -13,6 +13,7 @@ anyio==4.9.0
     #   anthropic
     #   httpx
     #   openai
+    #   starlette
 certifi==2025.4.26
     # via
     #   httpcore
@@ -26,6 +27,8 @@ distro==1.9.0
     # via
     #   anthropic
     #   openai
+fastapi==0.115.12
+    # via -r .\libraries\requirements.in
 greenlet==3.2.1
     # via sqlalchemy
 h11==0.16.0
@@ -76,6 +79,7 @@ packaging==24.2
 pydantic==2.11.4
     # via
     #   anthropic
+    #   fastapi
     #   langchain
     #   langchain-anthropic
     #   langchain-core
@@ -101,6 +105,8 @@ sniffio==1.3.1
     #   openai
 sqlalchemy==2.0.40
     # via langchain
+starlette==0.46.2
+    # via fastapi
 tenacity==9.1.2
     # via langchain-core
 tqdm==4.67.1
@@ -109,6 +115,7 @@ typing-extensions==4.13.2
     # via
     #   anthropic
     #   anyio
+    #   fastapi
     #   langchain-core
     #   openai
     #   pydantic
