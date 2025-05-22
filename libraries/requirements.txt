@@ -18,7 +18,6 @@ anyio==4.9.0
     #   httpx
     #   jupyter-server
     #   openai
-    #   starlette
 apscheduler==3.11.0
     # via -r .\libraries\requirements.in
 argon2-cffi==23.1.0
@@ -38,6 +37,8 @@ attrs==25.3.0
     #   referencing
 babel==2.17.0
     # via jupyterlab-server
+bcrypt==4.3.0
+    # via flask-bcrypt
 beautifulsoup4==4.13.4
     # via nbconvert
 bleach[css]==6.2.0
@@ -80,11 +81,19 @@ dotenv==0.9.9
     # via -r .\libraries\requirements.in
 executing==2.2.0
     # via stack-data
-fastapi==0.115.12
-    # via -r .\libraries\requirements.in
 fastjsonschema==2.21.1
     # via nbformat
 flask==3.1.0
+    # via
+    #   -r .\libraries\requirements.in
+    #   flask-bcrypt
+    #   flask-login
+    #   flask-sqlalchemy
+flask-bcrypt==1.0.1
+    # via -r .\libraries\requirements.in
+flask-login==0.6.3
+    # via -r .\libraries\requirements.in
+flask-sqlalchemy==3.1.1
     # via -r .\libraries\requirements.in
 fqdn==1.5.1
     # via jsonschema
@@ -308,7 +317,6 @@ pycparser==2.22
     # via cffi
 pydantic==2.11.4
     # via
-    #   fastapi
     #   groq
     #   langchain
     #   langchain-core
@@ -395,12 +403,11 @@ soupsieve==2.7
     # via beautifulsoup4
 sqlalchemy==2.0.40
     # via
+    #   flask-sqlalchemy
     #   langchain
     #   langchain-community
 stack-data==0.6.3
     # via ipython
-starlette==0.46.2
-    # via fastapi
 tenacity==9.1.2
     # via
     #   langchain-community
@@ -443,7 +450,6 @@ typing-extensions==4.13.2
     # via
     #   anyio
     #   beautifulsoup4
-    #   fastapi
     #   groq
     #   ipython
     #   langchain-core
@@ -479,7 +485,9 @@ webencodings==0.5.1
 websocket-client==1.8.0
     # via jupyter-server
 werkzeug==3.1.3
-    # via flask
+    # via
+    #   flask
+    #   flask-login
 widgetsnbextension==4.0.14
     # via ipywidgets
 yarl==1.20.0

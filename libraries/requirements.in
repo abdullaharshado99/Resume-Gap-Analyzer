@@ -1,7 +1,9 @@
 apscheduler
 dotenv
-fastapi
 flask
+flask_sqlalchemy
+flask_bcrypt
+flask_login
 jupyter
 jose
 langchain
