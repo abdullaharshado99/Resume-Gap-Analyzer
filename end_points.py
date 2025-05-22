@@ -1,119 +1,94 @@
 import os
-import asyncio
-import logging
-import traceback
-from typing import List, Any
-from jose import jwt, JWTError
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
-from apscheduler.jobstores.memory import MemoryJobStore
-from apscheduler.executors.pool import ThreadPoolExecutor
-from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import FastAPI, Depends, HTTPException, BackgroundTasks
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from models import engine, Session, User, bcrypt, Base
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
 
-load_dotenv()
+bcrypt.init_app(app)
 
-logging.basicConfig(level=logging.INFO)
+def get_session():
+    return Session(bind=engine)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'signin'
 
-@asynccontextmanager
-async def lifespan(sync_app: FastAPI):
-    job_stores = {"default": MemoryJobStore()}
-    executors = {"default": ThreadPoolExecutor(15)}
-    job_defaults = {"coalesce": False, "max_instances": 10}
-    scheduler = BackgroundScheduler(jobstores=job_stores, executors=executors, job_defaults=job_defaults)
+@login_manager.user_loader
+def load_user(user_id):
+    session = get_session()
+    return session.get(User, int(user_id))
 
-    print("Starting the scheduler...")
-    scheduler.start()
+@app.route('/')
+@login_required
+def index():
+    return render_template("index.html", user=current_user)
 
-    sync_app.state.scheduler = scheduler
+@app.route('/process', methods=['POST'])
+def process():
+    resume_file = request.files['resume']
+    job_description = request.form['job_description']
+    uploaded_folder = "data"
+    os.makedirs(uploaded_folder, exist_ok=True)
 
-    yield
+    if resume_file:
+        filename = resume_file.filename
+        filepath = os.path.join(uploaded_folder, filename)
+        resume_file.save(filepath)
+        return f"Received file: {filename}<br>Job Description: {job_description[:200]}..."
 
-    print("Stopping the scheduler...")
-    scheduler.shutdown(wait=False)
+    return "Error: No file uploaded"
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
 
-def get_scheduler():
-    return app.state.scheduler
+        session = get_session()
+        existing_user = session.query(User).filter_by(email=email).first()
 
+        if existing_user:
+            flash('Email already registered.', 'danger')
+            return redirect(url_for('signup'))
 
-app = FastAPI(lifespan=lifespan)
+        new_user = User(username=username, email=email)
+        new_user.set_password(password)
+        session.add(new_user)
+        session.commit()
+        flash('Account created. Please log in.', 'success')
+        return redirect(url_for('signin'))
 
-SECRET_KEY = os.getenv("JWT_SECRET", "default_secret_key")
-ALGORITHM = "HS256"
+    return render_template('sign_up.html')
 
+@app.route('/signin', methods=['GET', 'POST'])
+def signin():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
 
-class QueryResponse(BaseModel):
-    file_ids: List[str]
+        session = get_session()
+        user = session.query(User).filter_by(email=email).first()
 
+        if user and user.check_password(password):
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials.', 'danger')
+            return redirect(url_for('signin'))
 
-class QueryInput(BaseModel):
-    query: str
+    return render_template('sign_in.html')
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('signin'))
 
-class DatabaseName(BaseModel):
-    name: str
+if __name__ == '__main__':
+    with app.app_context():
+        Base.metadata.create_all(engine)
+    app.run(debug=True)
 
-
-class FileId(BaseModel):
-    id: str
-
-
-class DelFileId(BaseModel):
-    del_id: List[str]
-
-
-class UserId(BaseModel):
-    id: str
-
-
-class FileUrl(BaseModel):
-    url: str
-
-
-class FileName(BaseModel):
-    name: str
-
-
-security = HTTPBearer()
-
-
-def verify_jwt_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> tuple[dict[str, Any], str]:
-    token = credentials.credentials
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload, token
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-
-
-@app.get("/")
-async def welcome_message():
-    return {"message": "Welcome to the Resume Gap Analyzer API!"}
-
-
-@app.post("/run-data-pipeline/")
-async def run_data_pipeline(
-        file_url: FileUrl,
-        file_name: FileName,
-        file_id: FileId,
-        db_name: DatabaseName,
-        user_id: UserId,
-        auth_tuple: tuple[dict[str, Any], str] = Depends(verify_jwt_token)
-):
-    user, token = auth_tuple
-
-    asyncio.create_task(
-        run_pipeline_background(file_url.url, file_name.name, file_id.id, db_name.name, user_id.id, token))
-
-    return {"message": "Pipeline request received. Execution will start when a step is available."}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
