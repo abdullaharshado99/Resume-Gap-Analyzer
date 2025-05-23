@@ -1,5 +1,6 @@
 apscheduler
 dotenv
+docx2txt
 flask
 flask_sqlalchemy
 flask_bcrypt
@@ -10,3 +11,4 @@ langchain
 langchain_groq
 langchain_community
 openai
+pypdf

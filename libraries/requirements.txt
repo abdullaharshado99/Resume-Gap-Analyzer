@@ -77,6 +77,8 @@ distro==1.9.0
     # via
     #   groq
     #   openai
+docx2txt==0.9
+    # via -r .\libraries\requirements.in
 dotenv==0.9.9
     # via -r .\libraries\requirements.in
 executing==2.2.0
@@ -333,6 +335,8 @@ pygments==2.19.1
     #   ipython-pygments-lexers
     #   jupyter-console
     #   nbconvert
+pypdf==5.5.0
+    # via -r .\libraries\requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   arrow
