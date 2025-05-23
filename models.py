@@ -35,7 +35,9 @@ class Data(Base):
     __tablename__ = 'users_data'
 
     id = Column(Integer, primary_key=True)
-    record = Column(String, nullable=False)
+    summary = Column(String, nullable=False)
+    resume_data = Column(String, nullable=False)
+    job_description = Column(String, nullable=False)
 
     user = relationship('User', back_populates='data')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
