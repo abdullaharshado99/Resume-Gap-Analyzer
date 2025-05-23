@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
+        .chat-container {
+            max-width: 700px;
+            margin: auto;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .message {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .user {
+            flex-direction: row-reverse;
+            text-align: right;
+        }
+        .user .bubble {
+            background-color: #2563eb;
+            color: white;
+        }
+        .assistant .bubble {
+            background-color: #e5e7eb;
+        }
+        .bubble {
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            max-width: 75%;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .typing {
+            font-style: italic;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container mt-5">
+        <div class="chat-box" id="chatBox">
+            <div class="message assistant">
+                <img src="https://i.pravatar.cc/40?img=12" alt="Assistant" class="avatar">
+                <div class="bubble">Hi! I'm your AI Career Assistant. Ready for the Mock Interview?</div>
+            </div>
+        </div>
+        <form action="/mock_interview" method="post" class="chat-input">
+            <input type="text" class="form-control" id="userInput" placeholder="Type your message..." required>
+            <button type="button" class="btn btn-primary" onclick="handleMessage()">Send</button>
+        </form>
+    </div>
+
+    <script>
+        function appendMessage(sender, text, isTyping = false) {
+            const chatBox = document.getElementById("chatBox");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${sender}`;
+
+            const avatar = document.createElement("img");
+            avatar.src = sender === "user" ? "https://i.pravatar.cc/40?img=3" : "https://i.pravatar.cc/40?img=12";
+            avatar.className = "avatar";
+            msgDiv.appendChild(avatar);
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+
+            if (isTyping) {
+                bubble.innerHTML = '<span class="typing">Typing...</span>';
+            } else {
+                bubble.textContent = text;
+            }
+
+            msgDiv.appendChild(bubble);
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return bubble;
+        }
+
+        async function handleMessage() {
+            const input = document.getElementById("userInput");
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMessage("user", text);
+            input.value = "";
+
+            const typingBubble = appendMessage("assistant", "", true);
+
+            try {
+                const res = await fetch("/mock_interview", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"  // Ensure this is set
+                    },
+                    body: JSON.stringify({ query: text })   // This must be a valid JSON string
+                });
+
+                const data = await res.json();
+                typingBubble.innerHTML = data.response || "Sorry, something went wrong.";
+
+            } catch (err) {
+                console.error(err);
+                typingBubble.innerHTML = "Error connecting to the assistant.";
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
