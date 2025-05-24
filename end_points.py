@@ -1,5 +1,4 @@
 import os
-# from crypt import methods
 from models import engine, Session, User, bcrypt, Base, Data
 from pipeline import extract_text_from_doc, generate_gap_summary, mock_interview
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
@@ -24,8 +23,13 @@ def load_user(user_id):
 
 @app.route('/')
 @login_required
-def index():
-    return render_template("index.html", user=current_user)
+def home():
+    return render_template("home_page.html")
+
+@app.route('/data_collector', methods=['POST', 'GET'])
+@login_required
+def data():
+    return render_template('index.html')
 
 @app.route('/chatbot', methods=['POST', 'GET'])
 @login_required
@@ -77,7 +81,6 @@ def interview():
             return jsonify({"response": "Query is missing"}), 400
 
         response = mock_interview(query)
-        print(f'The {response=}')
         return jsonify({"response": response})
 
     except Exception as e:
@@ -119,7 +122,7 @@ def signin():
 
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('data'))
         else:
             flash('Invalid credentials.', 'danger')
             return redirect(url_for('signin'))
@@ -130,7 +133,7 @@ def signin():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('signin'))
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     with app.app_context():
