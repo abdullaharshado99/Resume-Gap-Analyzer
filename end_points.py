@@ -22,7 +22,6 @@ def load_user(user_id):
     return session.get(User, int(user_id))
 
 @app.route('/')
-@login_required
 def home():
     return render_template("home_page.html")
 
@@ -72,15 +71,15 @@ def process():
 @app.route('/mock_interview', methods=['POST', 'GET'])
 @login_required
 def interview():
-
     try:
-        data = request.get_json(force=True)
-        query = data.get("query", "").strip()
+        raw_data = request.get_json(force=True)
+        query = raw_data.get("query", "").strip()
+        difficulty = raw_data.get("difficulty", "medium").strip().lower()
 
         if not query:
             return jsonify({"response": "Query is missing"}), 400
 
-        response = mock_interview(query)
+        response = mock_interview(query, difficulty)
         return jsonify({"response": response})
 
     except Exception as e:
