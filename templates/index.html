@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Smart CV Matcher</title>
+  <title>Smart CV Gap Analyzer</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Tailwind CSS CDN -->
@@ -10,29 +11,56 @@
 
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
   <style>
     body {
-      background: linear-gradient(135deg, #93c5fd, #6366f1);
+      background: linear-gradient(135deg, #667eea, #764ba2);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+
   </style>
 </head>
 <body class="min-h-screen">
 
   <!-- Navbar -->
-  <header class="bg-white shadow py-4 px-6 sticky top-0 z-50">
-    <div class="container mx-auto flex justify-between items-center flex-wrap">
+    <header class="bg-white shadow py-3 px-4 sticky top-0 z-50">
+    <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>
-      <nav class="flex space-x-6 text-sm font-semibold">
-        <a href="/" class="text-gray-700 hover:text-indigo-600">Home</a>
-        <a href="/logout" title="Logout" class="text-red-600 hover:text-red-800">
-           <i class="bi bi-box-arrow-right"></i>
-        </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex space-x-6 text-indigo-700 fw-semibold">
+        <a href="/" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a>
+        <a href="#" title="Logout" onclick="confirmLogout()" class="text-red-600 hover:text-red-800">
+          <i class="bi bi-box-arrow-right"></i>Logout</a>
       </nav>
+
+      <!-- Hamburger Menu -->
+      <div class="md:hidden relative">
+        <button onclick="toggleMenu()" class="text-indigo-700 text-2xl">
+          <i class="bi bi-list"></i>
+        </button>
+        <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-50">
+          <a href="/" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-house-door-fill"></i> Home</a>
+          <a href="#" onclick="confirmLogout()" class="block px-4 py-2 text-red-600 hover:text-red-800">
+            <i class="bi bi-box-arrow-right"></i> Logout</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="flex items-center justify-center py-12 px-4">
+  <!-- Main Section -->
+  <main class="flex items-center justify-center px-4 pt-28 pb-12">
     <div class="bg-white shadow-2xl rounded-2xl p-10 max-w-3xl w-full">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold text-indigo-700 mb-2">Smart CV Matcher</h1>
@@ -69,75 +97,19 @@
       </form>
     </div>
   </main>
+
+  <!-- Scripts -->
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("mobileMenu");
+      menu.classList.toggle("hidden");
+    }
+
+    function confirmLogout() {
+      if (confirm("Are you sure you want to logout?")) {
+        window.location.href = "/logout";
+      }
+    }
+  </script>
 </body>
 </html>
-
-
-
-
-
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
-<!--<head>-->
-<!--  <meta charset="UTF-8">-->
-<!--  <title>Smart CV Matcher</title>-->
-<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
-
-<!--  &lt;!&ndash; Tailwind CSS CDN &ndash;&gt;-->
-<!--  <script src="https://cdn.tailwindcss.com"></script>-->
-
-<!--  &lt;!&ndash; Bootstrap Icons &ndash;&gt;-->
-<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">-->
-<!--</head>-->
-<!--<body class="bg-gradient-to-r from-sky-100 to-indigo-100 min-h-screen">-->
-
-<!--  &lt;!&ndash; Navbar &ndash;&gt;-->
-<!--  <header class="bg-white shadow py-4 px-6 sticky top-0 z-50">-->
-<!--    <div class="container mx-auto flex justify-between items-center flex-wrap">-->
-<!--      <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>-->
-<!--      <nav class="flex space-x-6 text-sm font-semibold">-->
-<!--        <a href="/" class="text-gray-700 hover:text-indigo-600">Home</a>-->
-<!--        <a href="/logout" class="text-red-600 hover:text-red-800">Logout</a>-->
-<!--      </nav>-->
-<!--    </div>-->
-<!--  </header>-->
-
-<!--  <div class="flex items-center justify-center py-10 px-4">-->
-<!--    <div class="bg-white shadow-2xl rounded-2xl p-10 max-w-2xl w-full">-->
-<!--      <div class="text-center mb-8">-->
-<!--        <h1 class="text-3xl font-bold text-indigo-700 mb-2">CV Matcher</h1>-->
-<!--        <p class="text-gray-500">Upload your resume and paste a job description to match</p>-->
-<!--      </div>-->
-
-<!--      <form action="/process" method="post" enctype="multipart/form-data" class="space-y-6">-->
-<!--        &lt;!&ndash; File Upload &ndash;&gt;-->
-<!--        <div>-->
-<!--          <label for="resume" class="block mb-2 text-sm font-medium text-gray-700">-->
-<!--            <i class="bi bi-upload"></i> Upload Resume (.pdf or .docx)-->
-<!--          </label>-->
-<!--          <input type="file" name="resume" accept=".pdf,.docx"-->
-<!--                 class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Job Description &ndash;&gt;-->
-<!--        <div>-->
-<!--          <label for="job_description" class="block mb-2 text-sm font-medium text-gray-700">-->
-<!--            <i class="bi bi-card-text"></i> Paste Job Description-->
-<!--          </label>-->
-<!--          <textarea name="job_description" rows="6"-->
-<!--                    class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"-->
-<!--                    placeholder="Enter job description here..."></textarea>-->
-<!--        </div>-->
-
-<!--        &lt;!&ndash; Submit &ndash;&gt;-->
-<!--        <div class="text-center">-->
-<!--          <button type="submit"-->
-<!--                  class="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition duration-200 shadow-lg">-->
-<!--            <i class="bi bi-arrow-right-circle"></i> Submit-->
-<!--          </button>-->
-<!--        </div>-->
-<!--      </form>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</body>-->
-<!--</html>-->
