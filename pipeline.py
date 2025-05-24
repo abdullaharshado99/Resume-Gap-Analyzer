@@ -146,7 +146,7 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
     return final_output
 
 
-def mock_interview(query: str) -> str:
+def mock_interview(query: str, difficulty: str) -> str:
     session = Session()
 
     user_data = (
@@ -172,6 +172,11 @@ def mock_interview(query: str) -> str:
         {resume_text}
         ---
         
+        Below is the difficulty level:
+        ---
+        {difficulty}
+        ---
+        
         Using this information, generate a mock interview. The interview should consist of:
         
         1. 3 Behavioral Questions based on leadership, collaboration, and self-direction.
@@ -195,7 +200,7 @@ def mock_interview(query: str) -> str:
 
     chain_with_history = RunnableWithMessageHistory(
         chain,
-        lambda session_id: FileChatMessageHistory(f"history_{current_user.id}.json"),
+        lambda session_id: FileChatMessageHistory(f"instance/history_{current_user.id}.json"),
         input_messages_key="input",
         history_messages_key="history"
     )
