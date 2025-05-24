@@ -5,7 +5,8 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 
 bcrypt = Bcrypt()
 
-DATABASE_URL = 'sqlite:///users.db'
+DATABASE_URL = 'sqlite:///instance/users.db'
+
 engine = create_engine(DATABASE_URL, echo=True)
 Session = sessionmaker(bind=engine)
 
