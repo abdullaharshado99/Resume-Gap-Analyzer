@@ -28,7 +28,7 @@ def home():
 @app.route('/data_collector', methods=['POST', 'GET'])
 @login_required
 def data():
-    return render_template('index.html')
+    return render_template('process.html')
 
 @app.route('/chatbot', methods=['POST', 'GET'])
 @login_required
