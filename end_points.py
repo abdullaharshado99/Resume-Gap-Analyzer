@@ -25,10 +25,29 @@ def load_user(user_id):
 def home():
     return render_template("home_page.html")
 
+
 @app.route('/data_collector', methods=['POST', 'GET'])
 @login_required
 def data():
-    return render_template('process.html')
+    session = get_session()
+    user_data = session.query(Data).filter_by(user_id=current_user.id).all()
+    return render_template('process.html', user_data=user_data)
+
+
+@app.route('/get_resume/<int:id>')
+@login_required
+def get_resume(id):
+    session = get_session()
+    resume = session.query(Data).filter_by(id=id, user_id=current_user.id).first()
+
+    if resume:
+        return jsonify({
+            'job_description': resume.job_description
+        })
+    else:
+        return jsonify({'error': 'Resume not found'}), 404
+
+
 
 @app.route('/chatbot', methods=['POST', 'GET'])
 @login_required
@@ -55,6 +74,7 @@ def process():
 
         session = Session()
         new_data = Data(
+            filename=filename,
             summary=summary,
             resume_data=resume_text,
             job_description=job_description,
@@ -90,6 +110,8 @@ def interview():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
@@ -101,7 +123,7 @@ def signup():
             flash('Email already registered.', 'danger')
             return redirect(url_for('signup'))
 
-        new_user = User(username=username, email=email)
+        new_user = User(firstname=firstname, lastname=lastname, username=username, email=email)
         new_user.set_password(password)
         session.add(new_user)
         session.commit()
