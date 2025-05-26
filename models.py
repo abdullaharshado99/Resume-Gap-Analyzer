@@ -17,6 +17,8 @@ class User(Base, UserMixin):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
+    firstname = Column(String, nullable=False)
+    lastname = Column(String, nullable=False)
     username = Column(String(150), nullable=False)
     email = Column(String(150), unique=True, nullable=False)
     password = Column(String(256), nullable=False)
@@ -36,6 +38,7 @@ class Data(Base):
     __tablename__ = 'users_data'
 
     id = Column(Integer, primary_key=True)
+    filename = Column(String, nullable=False)
     summary = Column(String, nullable=False)
     resume_data = Column(String, nullable=False)
     job_description = Column(String, nullable=False)
