@@ -6,7 +6,7 @@ from models import Session, Data
 from langchain_groq import ChatGroq
 from flask_login import current_user
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage
+# from langchain_core.messages import HumanMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -43,14 +43,14 @@ logger.addHandler(handler)
 
 
 llm_model = ChatGroq(
-    groq_api_key=groq_api_key,
+    api_key=groq_api_key,
     temperature=0.3,
-    model_name="Llama3-8b-8192"
+    model="Llama3-8b-8192"
 )
 
 def extract_text_from_doc(document: str) -> list[Document]:
 
-    textual_data = []
+    textual_data: list = []
 
     try:
         file_loaders = {
@@ -75,59 +75,80 @@ def extract_text_from_doc(document: str) -> list[Document]:
 
     return textual_data
 
+
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
 
-    final_output = ""
+    final_output: str = ""
+
     try:
         topic_extraction_prompt = PromptTemplate(
             input_variables=["job_description", "resume_data"],
             template=(
                 """
-                    You are an expert career advisor and hiring consultant.
+                You are an expert career advisor and hiring consultant.
 
-                    Your task is to analyze a candidate's resume against a job description for a specific role. Identify missing qualifications, skills, or experiences in the resume based on the job requirements, and provide a summary of the gaps along with actionable recommendations.
+                Your task is to analyze a candidate's resume against a job description for a specific role. Identify missing qualifications, skills, or experiences in the resume based on the job requirements, and provide a summary of the gaps along with actionable recommendations.
 
-                    Below is the job description:
-                    ---
-                    {job_description}
-                    ---
+                Below is the job description:
+                ---
+                {job_description}
+                ---
 
-                    Below is the candidate’s resume:
-                    ---
-                    {resume_data}
-                    ---
+                Below is the candidate’s resume:
+                ---
+                {resume_data}
+                ---
 
-                    Please return the following structured output:
+                Please return the following structured output:
 
-                    1. Summary of Fit:
-                       - Briefly state how well the resume aligns with the job (e.g., strong, moderate, weak fit).
-                       - Mention any relevant strengths the candidate has.
+                1. Summary of Fit:
+                   - Briefly state how well the resume aligns with the job (e.g., strong, moderate, weak fit).
+                   - Mention any relevant strengths the candidate has.
 
-                    2. Gaps & Missing Requirements:
-                       - List all major skills, tools, qualifications, or experiences mentioned in the job description but missing or weak in the resume.
-                       - Be specific: mention exact tool names, years of experience, project types, or domain knowledge that is absent or insufficient.
+                2. Gaps & Missing Requirements:
+                   - List all major skills, tools, qualifications, or experiences mentioned in the job description but missing or weak in the resume.
+                   - Be specific: mention exact tool names, years of experience, project types, or domain knowledge that is absent or insufficient.
 
-                    3. Gap Summary:
-                       - List the specific skills, experiences, tools, or qualifications mentioned in the job description that are not found or not clearly demonstrated in the resume.
-                       - Clearly separate missing technical skills, domain knowledge, soft skills, and experience-related gaps.
+                3. Gap Summary:
+                   - List the specific skills, experiences, tools, or qualifications mentioned in the job description that are not found or not clearly demonstrated in the resume.
+                   - Clearly separate missing technical skills, domain knowledge, soft skills, and experience-related gaps.
 
-                    4. Detailed Observations:
-                       - Identify any mismatches or partial matches (e.g., skill mentioned but not at required depth or experience level).
-                       - Highlight any outdated technologies or irrelevant content taking up space.
+                4. Key Gaps Identified
+                    - List each missing requirement from the job description that isn't in the resume
+                    - For each gap, specify:
+                      * The exact requirement from the job description
+                      * Evidence of its absence from the resume
+                      * Importance level (critical, important, nice-to-have)
+                      
+                5. Actionable Recommendations
+                    - Provide specific suggestions to address each major gap:
+                      * Skills to develop (with specific technologies/tools)
+                      * Experience to gain (types of projects or roles)
+                      * Resume improvements (what to add/emphasize/remove)
+                      * Courses, certifications, or learning resources
+                    - Prioritize recommendations by impact on job fit
 
-                    5. Recommendations:
-                       - Suggest what the candidate should learn, improve, or highlight to better match this job.
-                       - Recommend potential certifications, projects, or courses.
-                       - Suggest how to rewrite or enhance certain parts of the resume to align better.
+                6. Detailed Observations:
+                   - Identify any mismatches or partial matches (e.g., skill mentioned but not at required depth or experience level).
+                   - Highlight any outdated technologies or irrelevant content taking up space.
+                   - Note any partial matches or adjacent skills
+                   - Point out irrelevant information that could be removed
 
-                    6. Rejection Risk:
-                       - State whether the resume would likely be rejected for this role and why.
-                       - Include advice on how to bypass rejection in future iterations of the resume.
+                7. Recommendations:
+                   - Suggest what the candidate should learn, improve, or highlight to better match this job.
+                   - Recommend potential certifications, projects, or courses.
+                   - Suggest how to rewrite or enhance certain parts of the resume to align better.
 
-                    Guidelines:
-                    - Strictly return the response in cleanable and readable format never use ** and any special characters.
-                    - Be concise but insightful.
-                    - Be honest, constructive, and focused on helping the candidate improve alignment.
+                8. Rejection Risk:
+                   - State whether the resume would likely be rejected for this role and why.
+                   - Include advice on how to bypass rejection in future iterations of the resume.
+
+                IMPORTANT FORMATTING RULES:
+                - Absolutely NO markdown symbols (*, **, +, etc.)
+                - Section headers in ALL CAPS only
+                - Use hyphen (-) for lists ONLY when specified above
+                - Empty line between sections
+                - Plain text only
                 """
             )
         )
@@ -136,9 +157,19 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
             job_description=job_desc,
             resume_data=parsed_data
         )
-
         raw_output = llm_model.invoke(filled_prompt)
-        final_output = Markup(raw_output.content.strip().replace("\n", "<br>"))
+
+        clean_prompt = """
+        Remove ALL markdown formatting from the following text, including:
+        - Asterisks (*) and double asterisks (**)
+        - Plus signs (+)
+        - Any other special formatting characters
+        Preserve the content structure but use ONLY plain text formatting.
+        Return the cleaned version:
+        """ + raw_output.content
+
+        cleaned_output = llm_model.invoke(clean_prompt)
+        final_output = Markup(cleaned_output.content.strip().replace("\n", "<br>"))
 
     except Exception as e:
         logging.error(e)
