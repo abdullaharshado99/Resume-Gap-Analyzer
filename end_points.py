@@ -1,11 +1,14 @@
 import os
+import secrets
 from models import engine, Session, User, bcrypt, Base, Data
 from pipeline import extract_text_from_doc, generate_gap_summary, mock_interview
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 
+secret_key = secrets.token_hex(16)
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = secret_key
 
 bcrypt.init_app(app)
 
@@ -127,47 +130,79 @@ def interview():
         return jsonify({"response": f"Error: {str(e)}"}), 400
 
 
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
+        firstname = request.form.get('firstname', '').strip()
+        lastname = request.form.get('lastname', '').strip()
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
 
-        session = get_session()
-        existing_user = session.query(User).filter_by(email=email).first()
-
-        if existing_user:
-            flash('Email already registered.', 'danger')
+        if not all([firstname, lastname, username, email, password]):
+            flash('All fields are required.', 'danger')
             return redirect(url_for('signup'))
 
-        new_user = User(firstname=firstname, lastname=lastname, username=username, email=email)
-        new_user.set_password(password)
-        session.add(new_user)
-        session.commit()
-        flash('Account created. Please log in.', 'success')
-        return redirect(url_for('signin'))
+        session = get_session()
+        try:
+            existing_user = session.query(User).filter(
+                (User.email == email) | (User.username == username)
+            ).first()
+
+            if existing_user:
+                if existing_user.email == email:
+                    flash('Email already registered.', 'danger')
+                else:
+                    flash('Username already taken.', 'danger')
+                return redirect(url_for('signup'))
+
+            new_user = User(
+                firstname=firstname,
+                lastname=lastname,
+                username=username,
+                email=email
+            )
+            new_user.set_password(password)
+            session.add(new_user)
+            session.commit()
+            flash('Account created successfully! Please log in.', 'success')
+            return redirect(url_for('signin'))
+        except Exception as e:
+            session.rollback()
+            flash('An error occurred during registration. Please try again.', 'danger')
+            return redirect(url_for('signup'))
+        finally:
+            session.close()
 
     return render_template('sign_up.html')
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        if not email or not password:
+            flash('Both email and password are required.', 'danger')
+            return redirect(url_for('signin'))
 
         session = get_session()
-        user = session.query(User).filter_by(email=email).first()
+        try:
+            user = session.query(User).filter_by(email=email).first()
 
-        if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('data'))
-        else:
-            flash('Invalid credentials.', 'danger')
+            if user and user.check_password(password):
+                login_user(user)
+                next_page = request.args.get('next')
+                flash('Logged in successfully!', 'success')
+                return redirect(next_page or url_for('data'))
+            else:
+                flash('Invalid email or password.', 'danger')
+                return redirect(url_for('signin'))
+        except Exception as e:
+            flash('An error occurred during login. Please try again.', 'danger')
             return redirect(url_for('signin'))
+        finally:
+            session.close()
 
     return render_template('sign_in.html')
 
