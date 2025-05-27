@@ -48,6 +48,27 @@ def get_resume(id):
         return jsonify({'error': 'Resume not found'}), 404
 
 
+@app.route('/delete_resume/<int:resume_id>', methods=['DELETE'])
+@login_required
+def delete_resume(resume_id):
+    session = get_session()
+    try:
+        resume = session.query(Data).filter_by(id=resume_id, user_id=current_user.id).first()
+        if not resume:
+            return jsonify({'error': 'Resume not found'}), 404
+
+        session.delete(resume)
+        session.commit()
+
+        return jsonify({'success': True, 'message': 'Resume deleted successfully'})
+
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
 
 @app.route('/chatbot', methods=['POST', 'GET'])
 @login_required
