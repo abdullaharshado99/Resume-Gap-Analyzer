@@ -34,7 +34,7 @@ def home():
 def data():
     session = get_session()
     user_data = session.query(Data).filter_by(user_id=current_user.id).all()
-    return render_template('process.html', user_data=user_data)
+    return render_template('process.html', user_data=user_data, user=current_user)
 
 
 @app.route('/get_resume/<int:id>')
