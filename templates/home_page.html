@@ -6,150 +6,550 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home - AI Career Assistant</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4f46e5',
+            secondary: '#6366f1',
+            dark: '#1e1b4b',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+            'display': ['Poppins', 'ui-sans-serif']
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'fade-in': 'fadeIn 1s ease-in',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #fff;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      padding: 3rem;
+      text-align: center;
+      color: white;
+      max-width: 800px;
+      margin: 3rem auto;
+      transition: all 0.3s ease;
     }
 
-    .hero {
-      min-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 2rem;
-      padding-top: 8rem;
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
     }
 
     .btn-animated {
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      transition: transform 0.3s ease, background-color 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .btn-animated:hover {
-      transform: scale(1.05);
+      transform: translateY(-2px);
+      box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15);
     }
 
-    .btn-light-custom {
-      background-color: white;
-      color: #4f46e5;
-      border: none;
-    }
-
-    .btn-light-custom:hover {
-      background-color: #4f46e5;
-      color: white;
-      border: 1px solid white;
-    }
-
-    .glass-card {
+    .footer-icons a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-      padding: 2rem;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      max-width: 800px;
+      transition: all 0.3s ease;
     }
 
-    .footer-icons i {
-      font-size: 1.5rem;
-      margin: 0 0.5rem;
-      color: white;
-      transition: color 0.3s;
+    .footer-icons a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
     }
 
-    .footer-icons i:hover {
-      color: #d1d5db;
+    .text-gradient {
+      background: linear-gradient(90deg, #4f46e5, #a855f7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
-    .about-section {
-      padding: 4rem 2rem;
-      background-color: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
-      border-radius: 1rem;
-      margin: 4rem auto;
-      max-width: 1000px;
-      color: #fff;
-      text-align: center;
+    .floating-shapes {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .shape {
+      position: absolute;
+      opacity: 0.3;
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+
+    .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: #4f46e5;
+      top: 20%;
+      left: 10%;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape-2 {
+      width: 200px;
+      height: 200px;
+      background: #a855f7;
+      top: 60%;
+      left: 70%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    .shape-3 {
+      width: 150px;
+      height: 150px;
+      background: #ec4899;
+      top: 30%;
+      left: 80%;
+      animation: float 7s ease-in-out infinite 2s;
+    }
+
+    .feature-card {
+      transition: all 0.3s ease;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(99, 102, 241, 0.2));
+      z-index: -1;
+      border-radius: 16px;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2);
+    }
+
+    .wave-divider {
+      position: relative;
+      height: 100px;
+      overflow: hidden;
+    }
+
+    .wave-divider svg {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 
-<body>
+<body class="bg-gradient-to-br from-indigo-50 to-indigo-100 min-h-screen flex flex-col justify-between font-sans">
+  <!-- Floating background shapes -->
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
   <!-- Navbar -->
-  <header class="bg-white shadow py-3 px-4 sticky top-0 z-50">
-    <div class="container mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>
+  <header class="bg-white/90 shadow-lg backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+        </svg>
+        <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Career Assistant</h1>
+      </div>
 
       <!-- Desktop Nav -->
-      <nav class="hidden md:flex space-x-6 text-indigo-700 fw-semibold">
-        <a href="/" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a>
-        <a href="#about" class="text-decoration-none"><i class="bi bi-info-circle-fill"></i> About Us</a>
-        <a href="/signup" class="text-decoration-none"><i class="bi bi-person-plus-fill"></i> Sign Up</a>
-        <a href="/signin" class="text-decoration-none"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+      <nav class="hidden md:flex space-x-8">
+        <a href="/" class="text-indigo-700 font-medium hover:text-indigo-900 transition-colors duration-300 relative group">
+          Home
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="#about" class="text-indigo-700 font-medium hover:text-indigo-900 transition-colors duration-300 relative group">
+          About
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="#features" class="text-indigo-700 font-medium hover:text-indigo-900 transition-colors duration-300 relative group">
+          Features
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/signup" class="text-indigo-700 font-medium hover:text-indigo-900 transition-colors duration-300 relative group">
+          Sign Up
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="/signin" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+          Sign In
+        </a>
       </nav>
 
-      <!-- Hamburger Menu -->
+      <!-- Mobile Menu -->
       <div class="md:hidden relative">
-        <button onclick="toggleMenu()" class="text-indigo-700 text-2xl">
+        <button onclick="toggleMenu()" class="text-indigo-700 text-3xl focus:outline-none transition-transform duration-300 hover:rotate-90">
           <i class="bi bi-list"></i>
         </button>
-        <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-50">
-          <a href="/" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-house-door-fill"></i> Home</a>
-          <a href="#about" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-info-circle-fill"></i> About Us</a>
-          <a href="/signup" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-person-plus-fill"></i> Sign Up</a>
-          <a href="/signin" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>
+        <div id="mobileMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl hidden z-50 overflow-hidden">
+          <a href="/" class="block px-6 py-3 text-indigo-700 hover:bg-indigo-50 transition-colors duration-200">Home</a>
+          <a href="#about" class="block px-6 py-3 text-indigo-700 hover:bg-indigo-50 transition-colors duration-200">About</a>
+          <a href="#features" class="block px-6 py-3 text-indigo-700 hover:bg-indigo-50 transition-colors duration-200">Features</a>
+          <a href="/signup" class="block px-6 py-3 text-indigo-700 hover:bg-indigo-50 transition-colors duration-200">Sign Up</a>
+          <a href="/signin" class="block px-6 py-3 bg-indigo-100 text-indigo-700 font-medium">Sign In</a>
         </div>
       </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <main class="hero">
-    <div class="glass-card">
-      <h2 class="display-5 fw-bold mb-4 animate-pulse">Launch Your Career with Confidence</h2>
-      <p class="lead mb-5">Upload your resume and job description to identify skill gaps, and practice with a smart mock interview system powered by AI.</p>
-      <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
-        <a href="/signin" class="btn btn-animated btn-light-custom">Analyze Resume</a>
-        <a href="/signin" class="btn btn-outline-light btn-animated">Start Mock Interview</a>
+  <main class="flex-grow bg-[url('/static/images/bg-hero.jpg')] bg-cover bg-center bg-no-repeat py-20 px-4 relative overflow-hidden">
+    <div class="absolute inset-0 bg-indigo-900/50 backdrop-blur-sm"></div>
+    <div class="glass-card relative animate-fade-in-up">
+      <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-white font-display leading-tight">
+        <span class="text-gradient">Transform</span> Your Career Journey
+      </h2>
+      <p class="text-lg md:text-xl mb-8 text-indigo-100 max-w-2xl mx-auto">
+        Our AI-powered platform helps you identify skill gaps, optimize your resume, and ace interviews with confidence. Get personalized guidance tailored to your career goals.
+      </p>
+      <div class="flex flex-col md:flex-row justify-center gap-4">
+        <a href="/signin" class="btn-animated px-8 py-4 bg-white text-indigo-700 font-semibold rounded-full shadow-lg hover:bg-indigo-50 flex items-center justify-center space-x-2">
+          <i class="bi bi-file-earmark-text-fill"></i>
+          <span>Analyze Resume</span>
+        </a>
+        <a href="/signin" class="btn-animated px-8 py-4 border-2 border-white text-white font-semibold rounded-full shadow-lg hover:bg-white hover:text-indigo-700 transition-colors duration-300 flex items-center justify-center space-x-2">
+          <i class="bi bi-mic-fill"></i>
+          <span>Mock Interview</span>
+        </a>
       </div>
     </div>
   </main>
 
+  <!-- Wave Divider -->
+  <div class="wave-divider">
+    <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+      <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="currentColor" class="text-indigo-100"></path>
+      <path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="currentColor" class="text-indigo-100"></path>
+      <path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="currentColor" class="text-white"></path>
+    </svg>
+  </div>
+
+  <!-- Features Section -->
+  <section id="features" class="py-16 bg-white px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-4 font-display">Powerful Features</h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Everything you need to succeed in your job search, powered by advanced AI technology
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-file-earmark-break text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Resume Analysis</h3>
+          <p class="text-gray-600">
+            Get detailed feedback on your resume with actionable suggestions to improve your chances of getting noticed.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-search text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Job Match</h3>
+          <p class="text-gray-600">
+            Discover how well your skills match job descriptions and identify areas for improvement.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-mic text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Mock Interviews</h3>
+          <p class="text-gray-600">
+            Practice with AI-powered interviews that adapt to your responses and provide real-time feedback.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-graph-up text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Skill Tracking</h3>
+          <p class="text-gray-600">
+            Track your progress over time and see how your skills compare to industry standards.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-lightbulb text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Personalized Tips</h3>
+          <p class="text-gray-600">
+            Receive customized advice based on your career goals and the specific jobs you're targeting.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card p-6 bg-white border border-indigo-50">
+          <div class="w-14 h-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-4">
+            <i class="bi bi-bar-chart text-indigo-600 text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-indigo-800 mb-2">Progress Analytics</h3>
+          <p class="text-gray-600">
+            Visualize your interview performance and resume strength with detailed analytics.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- About Us Section -->
-  <section id="about" class="about-section">
-    <h2 class="text-3xl font-bold mb-4">About Us</h2>
-    <p class="text-lg">
-      Welcome to AI Career Assistant, your trusted partner in career success. Our platform leverages cutting-edge AI to analyze resumes,
-      match skills with job descriptions, and prepare users through personalized mock interviews. Our mission is to empower individuals
-      to confidently pursue and secure their dream careers.
-    </p>
+  <section id="about" class="py-20 bg-indigo-50 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col lg:flex-row items-center gap-12">
+        <div class="lg:w-1/2">
+          <img src="https://images.unsplash.com/photo-1579389083078-4e7018379f7e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+               alt="Career success"
+               class="rounded-2xl shadow-xl w-full h-auto object-cover animate-float">
+        </div>
+        <div class="lg:w-1/2">
+          <h2 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-6 font-display">About Our Platform</h2>
+          <p class="text-lg text-gray-700 mb-6">
+            AI Career Assistant was born from a simple idea: everyone deserves access to high-quality career guidance, regardless of their background or resources. Our platform combines cutting-edge artificial intelligence with insights from career experts to provide personalized, actionable advice.
+          </p>
+          <p class="text-lg text-gray-700 mb-8">
+            We believe that with the right tools and feedback, anyone can present their best professional self and land their dream job. Our mission is to democratize career coaching and make professional development accessible to all.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a href="/signup" class="btn-animated px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg text-center">
+              Get Started Today
+            </a>
+            <a href="#features" class="btn-animated px-6 py-3 border border-indigo-600 text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 text-center">
+              Explore Features
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-16 bg-white px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-indigo-800 mb-4 font-display">Success Stories</h2>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+          Hear from people who transformed their careers with our platform
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Testimonial 1 -->
+        <div class="bg-indigo-50 rounded-2xl p-6 relative">
+          <div class="absolute -top-4 -left-4 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+            <i class="bi bi-quote text-indigo-600 text-xl"></i>
+          </div>
+          <p class="text-gray-700 mb-4 italic">
+            "The mock interview feature helped me identify weaknesses I didn't even know I had. I went from multiple rejections to landing my dream job in 3 months!"
+          </p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-indigo-200 mr-4 overflow-hidden">
+              <img src="https://randomuser.me/api/portraits/women/43.jpg" alt="Sarah J." class="w-full h-full object-cover">
+            </div>
+            <div>
+              <h4 class="font-bold text-indigo-800">Sarah J.</h4>
+              <p class="text-sm text-gray-600">Product Manager</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="bg-indigo-50 rounded-2xl p-6 relative">
+          <div class="absolute -top-4 -left-4 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+            <i class="bi bi-quote text-indigo-600 text-xl"></i>
+          </div>
+          <p class="text-gray-700 mb-4 italic">
+            "The resume analysis pointed out gaps in my skills that I was able to address before applying. I got 3 interview invitations in the first week!"
+          </p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-indigo-200 mr-4 overflow-hidden">
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Michael T." class="w-full h-full object-cover">
+            </div>
+            <div>
+              <h4 class="font-bold text-indigo-800">Michael T.</h4>
+              <p class="text-sm text-gray-600">Software Engineer</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="bg-indigo-50 rounded-2xl p-6 relative">
+          <div class="absolute -top-4 -left-4 w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+            <i class="bi bi-quote text-indigo-600 text-xl"></i>
+          </div>
+          <p class="text-gray-700 mb-4 italic">
+            "As a career changer, I was lost on how to present my experience. The AI helped me reframe my background in a way that got me multiple offers."
+          </p>
+          <div class="flex items-center">
+            <div class="w-12 h-12 rounded-full bg-indigo-200 mr-4 overflow-hidden">
+              <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Priya K." class="w-full h-full object-cover">
+            </div>
+            <div>
+              <h4 class="font-bold text-indigo-800">Priya K.</h4>
+              <p class="text-sm text-gray-600">Data Analyst</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6 font-display">Ready to Transform Your Career?</h2>
+      <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+        Join thousands of professionals who have accelerated their job search with AI Career Assistant.
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <a href="/signup" class="btn-animated px-8 py-4 bg-white text-indigo-700 font-bold rounded-full shadow-lg hover:bg-indigo-50">
+          Start Free Trial
+        </a>
+        <a href="/signin" class="btn-animated px-8 py-4 border-2 border-white text-white font-bold rounded-full hover:bg-white hover:text-indigo-700">
+          Sign In
+        </a>
+      </div>
+    </div>
   </section>
 
   <!-- Footer -->
-  <footer class="text-center py-5 bg-indigo-900 text-white">
-    <div class="container">
-      <p class="mb-2"><strong>Contact Us:</strong></p>
-      <p>Email: support@aicareerassistant.com | Phone: +1 234 567 8900 | Address: 123 AI Blvd, Silicon Valley, CA</p>
-      <div class="footer-icons mt-3">
-        <a href="#"><i class="bi bi-linkedin"></i></a>
-        <a href="#"><i class="bi bi-twitter-x"></i></a>
-        <a href="#"><i class="bi bi-whatsapp"></i></a>
+  <footer class="bg-indigo-900 text-white pt-16 pb-8 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <!-- Column 1 -->
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+            </svg>
+            <h3 class="text-xl font-bold">AI Career Assistant</h3>
+          </div>
+          <p class="text-indigo-200">
+            Empowering your career journey with AI-powered tools and personalized guidance.
+          </p>
+        </div>
+
+        <!-- Column 2 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+          <ul class="space-y-2">
+            <li><a href="/" class="text-indigo-200 hover:text-white transition">Home</a></li>
+            <li><a href="#features" class="text-indigo-200 hover:text-white transition">Features</a></li>
+            <li><a href="#about" class="text-indigo-200 hover:text-white transition">About Us</a></li>
+            <li><a href="/signin" class="text-indigo-200 hover:text-white transition">Sign In</a></li>
+            <li><a href="/signup" class="text-indigo-200 hover:text-white transition">Sign Up</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 3 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Resources</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-indigo-200 hover:text-white transition">Blog</a></li>
+            <li><a href="#" class="text-indigo-200 hover:text-white transition">Career Tips</a></li>
+            <li><a href="#" class="text-indigo-200 hover:text-white transition">Interview Guide</a></li>
+            <li><a href="#" class="text-indigo-200 hover:text-white transition">Resume Templates</a></li>
+            <li><a href="#" class="text-indigo-200 hover:text-white transition">FAQ</a></li>
+          </ul>
+        </div>
+
+        <!-- Column 4 -->
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center">
+              <i class="bi bi-envelope mr-2 text-indigo-300"></i>
+              <span>support@aicareerassistant.com</span>
+            </li>
+            <li class="flex items-center">
+              <i class="bi bi-telephone mr-2 text-indigo-300"></i>
+              <span>+1 (234) 567-8900</span>
+            </li>
+            <li class="flex items-center">
+              <i class="bi bi-geo-alt mr-2 text-indigo-300"></i>
+              <span>123 AI Blvd, Silicon Valley, CA</span>
+            </li>
+          </ul>
+          <div class="footer-icons mt-6 flex space-x-4">
+            <a href="#" class="hover:text-indigo-300 transition" aria-label="LinkedIn">
+              <i class="bi bi-linkedin text-xl"></i>
+            </a>
+            <a href="#" class="hover:text-indigo-300 transition" aria-label="Twitter">
+              <i class="bi bi-twitter-x text-xl"></i>
+            </a>
+            <a href="#" class="hover:text-indigo-300 transition" aria-label="Facebook">
+              <i class="bi bi-facebook text-xl"></i>
+            </a>
+            <a href="#" class="hover:text-indigo-300 transition" aria-label="Instagram">
+              <i class="bi bi-instagram text-xl"></i>
+            </a>
+          </div>
+        </div>
       </div>
-      <div class="mt-3 border-top pt-2">
-        &copy; 2025 AI Career Assistant. All rights reserved.
+
+      <div class="border-t border-indigo-800 pt-8 text-center">
+        <p class="text-indigo-300">
+          &copy; 2025 AI Career Assistant. All rights reserved. | <a href="#" class="hover:text-white">Privacy Policy</a> | <a href="#" class="hover:text-white">Terms of Service</a>
+        </p>
       </div>
     </div>
   </footer>
-</body>
 
   <!-- Toggle Script -->
   <script>
@@ -157,7 +557,190 @@
       const menu = document.getElementById("mobileMenu");
       menu.classList.toggle("hidden");
     }
+
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
+
+      document.querySelectorAll('.feature-card, .about-section, .testimonial').forEach(el => {
+        observer.observe(el);
+      });
+    });
   </script>
 </body>
 
 </html>
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+
+<!--<head>-->
+<!--  <meta charset="UTF-8" />-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
+<!--  <title>Home - AI Career Assistant</title>-->
+<!--  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />-->
+<!--  <script src="https://cdn.tailwindcss.com"></script>-->
+<!--  <style>-->
+<!--    body {-->
+<!--      background: linear-gradient(135deg, #667eea, #764ba2);-->
+<!--      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--      color: #fff;-->
+<!--    }-->
+
+<!--    .hero {-->
+<!--      min-height: 90vh;-->
+<!--      display: flex;-->
+<!--      flex-direction: column;-->
+<!--      justify-content: center;-->
+<!--      align-items: center;-->
+<!--      text-align: center;-->
+<!--      padding: 2rem;-->
+<!--      padding-top: 8rem;-->
+<!--    }-->
+
+<!--    .btn-animated {-->
+<!--      padding: 0.75rem 1.5rem;-->
+<!--      border-radius: 0.5rem;-->
+<!--      font-weight: 600;-->
+<!--      transition: transform 0.3s ease, background-color 0.3s ease;-->
+<!--    }-->
+
+<!--    .btn-animated:hover {-->
+<!--      transform: scale(1.05);-->
+<!--    }-->
+
+<!--    .btn-light-custom {-->
+<!--      background-color: white;-->
+<!--      color: #4f46e5;-->
+<!--      border: none;-->
+<!--    }-->
+
+<!--    .btn-light-custom:hover {-->
+<!--      background-color: #4f46e5;-->
+<!--      color: white;-->
+<!--      border: 1px solid white;-->
+<!--    }-->
+
+<!--    .glass-card {-->
+<!--      background: rgba(255, 255, 255, 0.1);-->
+<!--      border-radius: 1rem;-->
+<!--      padding: 2rem;-->
+<!--      backdrop-filter: blur(10px);-->
+<!--      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);-->
+<!--      max-width: 800px;-->
+<!--    }-->
+
+<!--    .footer-icons i {-->
+<!--      font-size: 1.5rem;-->
+<!--      margin: 0 0.5rem;-->
+<!--      color: white;-->
+<!--      transition: color 0.3s;-->
+<!--    }-->
+
+<!--    .footer-icons i:hover {-->
+<!--      color: #d1d5db;-->
+<!--    }-->
+
+<!--    .about-section {-->
+<!--      padding: 4rem 2rem;-->
+<!--      background-color: rgba(255, 255, 255, 0.1);-->
+<!--      backdrop-filter: blur(6px);-->
+<!--      border-radius: 1rem;-->
+<!--      margin: 4rem auto;-->
+<!--      max-width: 1000px;-->
+<!--      color: #fff;-->
+<!--      text-align: center;-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--  &lt;!&ndash; Navbar &ndash;&gt;-->
+<!--  <header class="bg-white shadow py-3 px-4 sticky top-0 z-50">-->
+<!--    <div class="container mx-auto flex justify-between items-center">-->
+<!--      <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>-->
+
+<!--      &lt;!&ndash; Desktop Nav &ndash;&gt;-->
+<!--      <nav class="hidden md:flex space-x-6 text-indigo-700 fw-semibold">-->
+<!--        <a href="/" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a>-->
+<!--        <a href="#about" class="text-decoration-none"><i class="bi bi-info-circle-fill"></i> About Us</a>-->
+<!--        <a href="/signup" class="text-decoration-none"><i class="bi bi-person-plus-fill"></i> Sign Up</a>-->
+<!--        <a href="/signin" class="text-decoration-none"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>-->
+<!--      </nav>-->
+
+<!--      &lt;!&ndash; Hamburger Menu &ndash;&gt;-->
+<!--      <div class="md:hidden relative">-->
+<!--        <button onclick="toggleMenu()" class="text-indigo-700 text-2xl">-->
+<!--          <i class="bi bi-list"></i>-->
+<!--        </button>-->
+<!--        <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-50">-->
+<!--          <a href="/" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-house-door-fill"></i> Home</a>-->
+<!--          <a href="#about" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-info-circle-fill"></i> About Us</a>-->
+<!--          <a href="/signup" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-person-plus-fill"></i> Sign Up</a>-->
+<!--          <a href="/signin" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-box-arrow-in-right"></i> Sign In</a>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </header>-->
+
+<!--  &lt;!&ndash; Hero Section &ndash;&gt;-->
+<!--  <main class="hero">-->
+<!--    <div class="glass-card">-->
+<!--      <h2 class="display-5 fw-bold mb-4 animate-pulse">Launch Your Career with Confidence</h2>-->
+<!--      <p class="lead mb-5">Upload your resume and job description to identify skill gaps, and practice with a smart mock interview system powered by AI.</p>-->
+<!--      <div class="d-flex flex-column flex-md-row justify-content-center gap-3">-->
+<!--        <a href="/signin" class="btn btn-animated btn-light-custom">Analyze Resume</a>-->
+<!--        <a href="/signin" class="btn btn-outline-light btn-animated">Start Mock Interview</a>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </main>-->
+
+<!--  &lt;!&ndash; About Us Section &ndash;&gt;-->
+<!--  <section id="about" class="about-section">-->
+<!--    <h2 class="text-3xl font-bold mb-4">About Us</h2>-->
+<!--    <p class="text-lg">-->
+<!--      Welcome to AI Career Assistant, your trusted partner in career success. Our platform leverages cutting-edge AI to analyze resumes,-->
+<!--      match skills with job descriptions, and prepare users through personalized mock interviews. Our mission is to empower individuals-->
+<!--      to confidently pursue and secure their dream careers.-->
+<!--    </p>-->
+<!--  </section>-->
+
+<!--  &lt;!&ndash; Footer &ndash;&gt;-->
+<!--  <footer class="text-center py-5 bg-indigo-900 text-white">-->
+<!--    <div class="container">-->
+<!--      <p class="mb-2"><strong>Contact Us:</strong></p>-->
+<!--      <p>Email: support@aicareerassistant.com | Phone: +1 234 567 8900 | Address: 123 AI Blvd, Silicon Valley, CA</p>-->
+<!--      <div class="footer-icons mt-3">-->
+<!--        <a href="#"><i class="bi bi-linkedin"></i></a>-->
+<!--        <a href="#"><i class="bi bi-twitter-x"></i></a>-->
+<!--        <a href="#"><i class="bi bi-whatsapp"></i></a>-->
+<!--      </div>-->
+<!--      <div class="mt-3 border-top pt-2">-->
+<!--        &copy; 2025 AI Career Assistant. All rights reserved.-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </footer>-->
+<!--</body>-->
+
+<!--  &lt;!&ndash; Toggle Script &ndash;&gt;-->
+<!--  <script>-->
+<!--    function toggleMenu() {-->
+<!--      const menu = document.getElementById("mobileMenu");-->
+<!--      menu.classList.toggle("hidden");-->
+<!--    }-->
+<!--  </script>-->
+<!--</body>-->
+
+<!--</html>-->
