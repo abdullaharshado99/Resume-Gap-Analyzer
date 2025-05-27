@@ -1,4 +1,5 @@
 import os
+import logging
 import secrets
 from models import engine, Session, User, bcrypt, Base, Data
 from pipeline import extract_text_from_doc, generate_gap_summary, mock_interview
@@ -37,11 +38,11 @@ def data():
     return render_template('process.html', user_data=user_data, user=current_user)
 
 
-@app.route('/get_resume/<int:id>')
+@app.route('/get_resume/<int:resume_id>')
 @login_required
-def get_resume(id):
+def get_resume(resume_id):
     session = get_session()
-    resume = session.query(Data).filter_by(id=id, user_id=current_user.id).first()
+    resume = session.query(Data).filter_by(id=resume_id, user_id=current_user.id).first()
 
     if resume:
         return jsonify({
@@ -168,6 +169,7 @@ def signup():
             flash('Account created successfully! Please log in.', 'success')
             return redirect(url_for('signin'))
         except Exception as e:
+            logging.error(e)
             session.rollback()
             flash('An error occurred during registration. Please try again.', 'danger')
             return redirect(url_for('signup'))
@@ -199,6 +201,7 @@ def signin():
                 flash('Invalid email or password.', 'danger')
                 return redirect(url_for('signin'))
         except Exception as e:
+            logging.error(e)
             flash('An error occurred during login. Please try again.', 'danger')
             return redirect(url_for('signin'))
         finally:
