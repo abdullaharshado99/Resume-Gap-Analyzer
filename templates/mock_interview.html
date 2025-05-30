@@ -3,21 +3,92 @@
 
 <head>
   <meta charset="UTF-8" />
+  <title>ChatBot - AI Career Assistant</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Career Assistant</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4f46e5',
+            secondary: '#6366f1',
+            dark: '#1e1b4b',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+            'display': ['Poppins', 'ui-sans-serif']
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'fade-in': 'fadeIn 1s ease-in',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #fff;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+    .floating-shapes {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .shape {
+      position: absolute;
+      opacity: 0.3;
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+
+    .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: #4f46e5;
+      top: 20%;
+      left: 10%;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape-2 {
+      width: 200px;
+      height: 200px;
+      background: #a855f7;
+      top: 60%;
+      left: 70%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    .shape-3 {
+      width: 150px;
+      height: 150px;
+      background: #ec4899;
+      top: 30%;
+      left: 80%;
+      animation: float 7s ease-in-out infinite 2s;
     }
 
     .chat-container {
-      max-width: 700px;
+      max-width: 1400px;
       margin: auto;
       height: 80vh;
       display: flex;
@@ -91,56 +162,113 @@
   </style>
 </head>
 
-<body class="min-h-screen">
-  <header class="bg-white shadow py-3 px-4 sticky top-0 z-50">
-    <div class="container mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>
+<body class="bg-gradient-to-br from-indigo-50 to-indigo-100 min-h-screen flex flex-col font-sans">
+  <!-- Floating background shapes -->
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="bg-white/90 shadow-lg backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+        </svg>
+        <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Career Assistant</h1>
+      </div>
 
       <!-- Desktop Nav -->
-      <nav class="hidden md:flex space-x-6 text-indigo-700 fw-semibold">
-        <a href="/" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a>
-        <a href="#" title="Logout" onclick="confirmLogout()" class="text-red-600 hover:text-red-800">
-          <i class="bi bi-box-arrow-right"></i> Logout</a>
+      <nav class="hidden md:flex space-x-8">
+        <a href="/" class="text-indigo-700 font-medium hover:text-indigo-900 transition-colors duration-300 relative group">
+          <i class="bi bi-house-door-fill mr-1"></i> Home
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
+        <a href="#" title="Logout" onclick="confirmLogout()" class="text-red-600 hover:text-red-800 transition-colors duration-300 relative group">
+          <i class="bi bi-box-arrow-right mr-1"></i> Logout
+          <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+        </a>
       </nav>
 
-      <!-- Hamburger Menu -->
-      <div class="md:hidden relative">
-        <button onclick="toggleMenu()" class="text-indigo-700 text-2xl">
+      <!-- Mobile Menu -->
+      <div class="md:hidden flex items-center space-x-4">
+        <button id="navToggleBtn" aria-label="Toggle Menu" class="text-indigo-700 text-2xl focus:outline-none transition-transform duration-300 hover:rotate-90">
           <i class="bi bi-list"></i>
         </button>
-        <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-50">
-          <a href="/" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-house-door-fill"></i> Home</a>
-          <a href="#" onclick="confirmLogout()" class="block px-4 py-2 text-red-600 hover:text-red-800">
-            <i class="bi bi-box-arrow-right"></i> Logout</a>
-        </div>
+      </div>
+
+      <!-- Mobile navigation menu -->
+      <div id="mobileMenu" class="absolute top-[25px] right-0 mt-12 w-56 bg-white rounded-xl shadow-xl hidden z-50 overflow-hidden">
+        <a href="/" class="block px-6 py-3 text-indigo-700 hover:bg-indigo-50 transition-colors duration-200">
+          <i class="bi bi-house-door-fill mr-2"></i> Home
+        </a>
+        <a href="#" onclick="confirmLogout()" class="block px-6 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200">
+          <i class="bi bi-box-arrow-right mr-2"></i> Logout
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="py-10 px-4">
-    <div class="chat-container">
-      <div class="chat-box" id="chatBox">
-        <div class="message assistant">
-          <img src="https://img.icons8.com/emoji/48/robot-emoji.png" alt="Assistant" class="avatar">
-          <div class="bubble">
-            <p>Hi! I'm your AI Career Assistant.</p>
-            <p>Ready for the Mock Interview?</p>
+  <!-- Chatbot Interface -->
+     <main class="py-10 px-4">
+        <div class="chat-container">
+          <div class="chat-box" id="chatBox">
+            <div class="message assistant">
+              <img src="https://img.icons8.com/emoji/48/robot-emoji.png" alt="Assistant" class="avatar">
+              <div class="bubble">
+                <p>Hi! I'm your AI Career Assistant.</p>
+                <p>Ready for the Mock Interview?</p>
+              </div>
+            </div>
           </div>
+            <div class="chat-input bg-white">
+              <select id="difficulty" class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+
+              <input type="text" id="userInput" placeholder="Type your message..." required autocomplete="off"
+                class="flex-grow border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+              <button type="button" onclick="handleMessage()"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Send</button>
+            </div>
+        </div>
+      </main>
+
+  <!-- Footer -->
+  <footer class="bg-indigo-900 text-white py-8 mt-auto">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+          </svg>
+          <span class="text-lg font-semibold">AI Career Assistant</span>
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-indigo-300 hover:text-white transition">
+            <i class="bi bi-linkedin text-xl"></i>
+          </a>
+          <a href="#" class="text-indigo-300 hover:text-white transition">
+            <i class="bi bi-twitter-x text-xl"></i>
+          </a>
+          <a href="#" class="text-indigo-300 hover:text-white transition">
+            <i class="bi bi-facebook text-xl"></i>
+          </a>
         </div>
       </div>
-      <div class="chat-input">
-        <select id="difficulty" class="form-select w-auto">
-          <option value="easy">Easy</option>
-          <option value="medium" selected>Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-        <input type="text" class="form-control" id="userInput" placeholder="Type your message..." required autocomplete="off">
-        <button type="button" class="btn btn-primary" onclick="handleMessage()">Send</button>
+      <div class="border-t border-indigo-800 mt-6 pt-6 text-center text-indigo-300 text-sm">
+        &copy; 2025 AI Career Assistant. All rights reserved.
       </div>
     </div>
-  </main>
+  </footer>
 
   <script>
+
     function toggleMenu() {
       const menu = document.getElementById("mobileMenu");
       menu.classList.toggle("hidden");
@@ -221,222 +349,29 @@
         handleMessage();
       }
     });
-  </script>
+
+    // Toggle nav menu on hamburger (list icon)
+    navToggleBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      toggleHistorySidebar(false);
+    });
+
+    // Animation on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
+
+      document.querySelectorAll('.resume-item, #resumeForm').forEach(el => {
+        observer.observe(el);
+      });
+    });
+</script>
 </body>
-
 </html>
-
-
-
-<!--<!DOCTYPE html>-->
-<!--<html lang="en">-->
-
-<!--<head>-->
-<!--  <meta charset="UTF-8" />-->
-<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0" />-->
-<!--  <title>AI Career Assistant</title>-->
-<!--  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">-->
-<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />-->
-<!--  <script src="https://cdn.tailwindcss.com"></script>-->
-<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">-->
-<!--  <style>-->
-<!--    body {-->
-<!--      background: linear-gradient(135deg, #667eea, #764ba2);-->
-<!--      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
-<!--      color: #fff;-->
-<!--    }-->
-
-<!--    .chat-container {-->
-<!--      max-width: 700px;-->
-<!--      margin: auto;-->
-<!--      height: 80vh;-->
-<!--      display: flex;-->
-<!--      flex-direction: column;-->
-<!--      border-radius: 1rem;-->
-<!--      overflow: hidden;-->
-<!--      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);-->
-<!--      background: white;-->
-<!--    }-->
-
-<!--    .chat-box {-->
-<!--      flex-grow: 1;-->
-<!--      padding: 1rem;-->
-<!--      overflow-y: auto;-->
-<!--    }-->
-
-<!--    .chat-input {-->
-<!--      padding: 1rem;-->
-<!--      border-top: 1px solid #ddd;-->
-<!--      display: flex;-->
-<!--      gap: 0.5rem;-->
-<!--      align-items: center;-->
-<!--    }-->
-
-<!--    .message {-->
-<!--      margin-bottom: 1rem;-->
-<!--      display: flex;-->
-<!--      align-items: flex-start;-->
-<!--      gap: 0.5rem;-->
-<!--    }-->
-
-<!--    .user {-->
-<!--      flex-direction: row-reverse;-->
-<!--      text-align: right;-->
-<!--    }-->
-
-<!--    .user .bubble {-->
-<!--      background-color: #6366f1;-->
-<!--      color: white;-->
-<!--    }-->
-
-<!--    .assistant .bubble {-->
-<!--      background-color: cornflowerblue;-->
-<!--    }-->
-
-<!--    .bubble {-->
-<!--      display: inline-block;-->
-<!--      padding: 0.75rem 1rem;-->
-<!--      border-radius: 1rem;-->
-<!--      max-width: 75%;-->
-<!--    }-->
-
-<!--    .avatar {-->
-<!--      width: 40px;-->
-<!--      height: 40px;-->
-<!--      border-radius: 50%;-->
-<!--      object-fit: cover;-->
-<!--    }-->
-
-<!--    .typing {-->
-<!--      font-style: italic;-->
-<!--      color: white;-->
-<!--    }-->
-<!--  </style>-->
-<!--</head>-->
-
-<!--<body class="min-h-screen">-->
-<!--    <header class="bg-white shadow py-3 px-4 sticky top-0 z-50">-->
-<!--    <div class="container mx-auto flex justify-between items-center">-->
-<!--      <h1 class="text-xl font-bold text-indigo-700">AI Career Assistant</h1>-->
-
-<!--      &lt;!&ndash; Desktop Nav &ndash;&gt;-->
-<!--      <nav class="hidden md:flex space-x-6 text-indigo-700 fw-semibold">-->
-<!--        <a href="/" class="text-decoration-none"><i class="bi bi-house-door-fill"></i> Home</a>-->
-<!--        <a href="#" title="Logout" onclick="confirmLogout()" class="text-red-600 hover:text-red-800">-->
-<!--          <i class="bi bi-box-arrow-right"></i>Logout</a>-->
-<!--      </nav>-->
-
-<!--      &lt;!&ndash; Hamburger Menu &ndash;&gt;-->
-<!--      <div class="md:hidden relative">-->
-<!--        <button onclick="toggleMenu()" class="text-indigo-700 text-2xl">-->
-<!--          <i class="bi bi-list"></i>-->
-<!--        </button>-->
-<!--        <div id="mobileMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-50">-->
-<!--          <a href="/" class="block px-4 py-2 text-indigo-700 hover:bg-gray-100"><i class="bi bi-house-door-fill"></i> Home</a>-->
-<!--          <a href="#" onclick="confirmLogout()" class="block px-4 py-2 text-red-600 hover:text-red-800">-->
-<!--            <i class="bi bi-box-arrow-right"></i> Logout</a>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </header>-->
-
-<!--  <main class="py-10 px-4">-->
-<!--    <div class="chat-container">-->
-<!--      <div class="chat-box" id="chatBox">-->
-<!--        <div class="message assistant">-->
-<!--          <img src="https://i.pravatar.cc/40?img=12" alt="Assistant" class="avatar">-->
-<!--          <div class="bubble">Hi! I'm your AI Career Assistant. Ready for the Mock Interview?</div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="chat-input">-->
-<!--        <select id="difficulty" class="form-select w-auto">-->
-<!--          <option value="easy">Easy</option>-->
-<!--          <option value="medium" selected>Medium</option>-->
-<!--          <option value="hard">Hard</option>-->
-<!--        </select>-->
-<!--        <input type="text" class="form-control" id="userInput" placeholder="Type your message..." required-->
-<!--          autocomplete="off">-->
-<!--        <button type="button" class="btn btn-primary" onclick="handleMessage()">Send</button>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </main>-->
-
-<!--  <script>-->
-
-<!--    function toggleMenu() {-->
-<!--      const menu = document.getElementById("mobileMenu");-->
-<!--      menu.classList.toggle("hidden");-->
-<!--    }-->
-
-<!--    function appendMessage(sender, text, isTyping = false) {-->
-<!--      const chatBox = document.getElementById("chatBox");-->
-<!--      const msgDiv = document.createElement("div");-->
-<!--      msgDiv.className = `message ${sender}`;-->
-
-<!--      const avatar = document.createElement("img");-->
-<!--      avatar.src = sender === "user" ? "https://i.pravatar.cc/40?img=3" : "https://i.pravatar.cc/40?img=12";-->
-<!--      avatar.className = "avatar";-->
-<!--      msgDiv.appendChild(avatar);-->
-
-<!--      const bubble = document.createElement("div");-->
-<!--      bubble.className = "bubble";-->
-
-<!--      if (isTyping) {-->
-<!--        bubble.innerHTML = '<span class="typing">Typing...</span>';-->
-<!--      } else {-->
-<!--        bubble.textContent = text;-->
-<!--      }-->
-
-<!--      msgDiv.appendChild(bubble);-->
-<!--      chatBox.appendChild(msgDiv);-->
-<!--      chatBox.scrollTop = chatBox.scrollHeight;-->
-<!--      return bubble;-->
-<!--    }-->
-
-<!--    async function handleMessage() {-->
-<!--      const input = document.getElementById("userInput");-->
-<!--      const difficulty = document.getElementById("difficulty").value;-->
-<!--      const text = input.value.trim();-->
-<!--      if (!text) return;-->
-
-<!--      appendMessage("user", text);-->
-<!--      input.value = "";-->
-
-<!--      const typingBubble = appendMessage("assistant", "", true);-->
-
-<!--      try {-->
-<!--        const res = await fetch("/mock_interview", {-->
-<!--          method: "POST",-->
-<!--          headers: {-->
-<!--            "Content-Type": "application/json"-->
-<!--          },-->
-<!--          body: JSON.stringify({ query: text, difficulty: difficulty })-->
-<!--        });-->
-
-<!--        const data = await res.json();-->
-<!--        typingBubble.innerHTML = data.response || "Sorry, something went wrong.";-->
-<!--      } catch (err) {-->
-<!--        console.error(err);-->
-<!--        typingBubble.innerHTML = "Error connecting to the assistant.";-->
-<!--      }-->
-<!--    }-->
-
-<!--    document.getElementById("userInput").addEventListener("keypress", function (e) {-->
-<!--      if (e.key === "Enter") {-->
-<!--        e.preventDefault();-->
-<!--        handleMessage();-->
-<!--      }-->
-<!--    });-->
-
-<!--    document.getElementById("logoutBtn").addEventListener("click", function (e) {-->
-<!--      e.preventDefault();-->
-<!--      const confirmLogout = confirm("Are you sure you want to logout?");-->
-<!--      if (confirmLogout) {-->
-<!--        window.location.href = "/logout";-->
-<!--      }-->
-<!--    });-->
-<!--  </script>-->
-<!--</body>-->
-
-<!--</html>-->
-
