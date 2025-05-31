@@ -9,6 +9,7 @@ from langchain_groq import ChatGroq
 from flask_login import current_user
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnableConfig
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import FileChatMessageHistory
@@ -155,8 +156,6 @@ def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
 
 
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
-
-    final_output: str = ""
 
     try:
         topic_extraction_prompt = PromptTemplate(
@@ -315,11 +314,11 @@ def mock_interview(query: str, difficulty: str) -> str:
         history_messages_key="history"
     )
 
-    session_id = str(current_user.id)
+    session_idd = str(current_user.id)
 
     response = chain_with_history.invoke(
         {"input": query},
-        config={"configurable": {"session_id": session_id}}
+        config=RunnableConfig(configurable={"session_id": session_idd})
     )
 
     return response.content if hasattr(response, 'content') else str(response)
