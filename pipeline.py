@@ -1,5 +1,7 @@
 import os
+import re
 import logging
+import json
 from markupsafe import Markup
 from dotenv import load_dotenv
 from models import Session, Data
@@ -75,7 +77,84 @@ def extract_text_from_doc(document: str) -> list[Document]:
     return textual_data
 
 
-def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
+def extract_json(text: str) -> str:
+    match = re.search(r"\{[\s\S]*}", text)
+    if match:
+        return match.group()
+    raise ValueError("No valid JSON object found in LLM output.")
+
+def normalize_scores_to_100(scores: dict) -> dict:
+    total = sum(scores.values())
+    if total == 0:
+        return {k: 0 for k in scores}
+    normalized = {k: round((v / total) * 100) for k, v in scores.items()}
+    diff = 100 - sum(normalized.values())
+    if diff != 0:
+        max_key = max(normalized, key=normalized.get)
+        normalized[max_key] += diff
+    return normalized
+
+def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
+
+    try:
+        gap_score_prompt = PromptTemplate(
+            input_variables=["resume_data", "job_description"],
+            template="""
+            You are an expert career advisor and hiring consultant.
+    
+            Your task is to analyze a candidate's resume against a job description for a specific role.
+    
+            Below is the job description:
+            ---
+            {job_description}
+            ---
+    
+            Below is the candidate’s resume:
+            ---
+            {resume_data}
+            ---
+    
+            Please return a JSON object that evaluates how well the resume matches the job description.
+    
+            IMPORTANT RULES:
+            - Distribute a total of 100 points across the following four categories:
+                * "Technical Lack"
+                * "Experience Lack"
+                * "Domain Lack"
+                * "Soft Skills Lack"
+            - The sum of all four scores MUST equal exactly 100.
+            - Score proportionally based on how well the resume meets each category relative to the others.
+            - Output ONLY a valid JSON object in the format below:
+    
+            {{
+              "Technical Lack": <score>,
+              "Experience Lack": <score>,
+              "Domain Lack": <score>,
+              "Soft Skills Lack": <score>
+            }}
+            """
+        )
+
+        filled_prompt = gap_score_prompt.format(
+            job_description=job_desc,
+            resume_data=parsed_data
+        )
+
+        raw_output = llm_model.invoke(filled_prompt)
+        json_text = extract_json(raw_output.content)
+        gap_scores = json.loads(json_text)
+
+        # # Optional safety check
+        # gap_scores = normalize_scores_to_100(gap_scores)
+
+        return gap_scores
+
+    except Exception as e:
+        logging.error(e)
+        return False
+
+
+def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
 
     final_output: str = ""
 
@@ -118,7 +197,7 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
                       * The exact requirement from the job description
                       * Evidence of its absence from the resume
                       * Importance level (critical, important, nice-to-have)
-                      
+
                 5. Actionable Recommendations
                     - Provide specific suggestions to address each major gap:
                       * Skills to develop (with specific technologies/tools)
@@ -169,11 +248,12 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str:
 
         cleaned_output = llm_model.invoke(clean_prompt)
         final_output = Markup(cleaned_output.content.strip().replace("\n", "<br>"))
+        return final_output
 
     except Exception as e:
         logging.error(e)
+        return False
 
-    return final_output
 
 
 def mock_interview(query: str, difficulty: str) -> str:
@@ -243,7 +323,5 @@ def mock_interview(query: str, difficulty: str) -> str:
     )
 
     return response.content if hasattr(response, 'content') else str(response)
-
-
 
 
