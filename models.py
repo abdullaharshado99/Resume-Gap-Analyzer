@@ -39,9 +39,9 @@ class Data(Base):
 
     id = Column(Integer, primary_key=True)
     filename = Column(String, nullable=False)
-    summary = Column(String, nullable=False)
-    resume_data = Column(String, nullable=False)
-    job_description = Column(String, nullable=False)
+    summary = Column(String(5000), nullable=False)
+    resume_data = Column(String(5000), nullable=False)
+    job_description = Column(String(5000), nullable=False)
 
     user = relationship('User', back_populates='data')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
