@@ -2,9 +2,9 @@ import os
 import logging
 import secrets
 from models import engine, Session, User, bcrypt, Base, Data
-from pipeline import extract_text_from_doc, generate_gap_summary, mock_interview
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from pipeline import extract_text_from_doc, generate_gap_summary, generate_gap_score, mock_interview
 
 secret_key = secrets.token_hex(16)
 
@@ -96,6 +96,7 @@ def process():
         parsed_data = extract_text_from_doc(filepath)
         resume_text = parsed_data[0].page_content
         summary = generate_gap_summary(resume_text, job_description)
+        gap_score = generate_gap_score(resume_text, job_description)
 
         session = Session()
         new_data = Data(
@@ -107,8 +108,11 @@ def process():
         )
         session.add(new_data)
         session.commit()
+        # print(f"The {parsed_data=}")
+        # print(f"The {summary=}")
+        # print(f"The {gap_score=}")
 
-        return render_template("response.html", data=summary)
+        return render_template("response.html", data=summary, gap_data=gap_score)
 
     return "Error: No file uploaded", 404
 
