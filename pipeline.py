@@ -1,7 +1,7 @@
 import os
 import re
-import logging
 import json
+import logging
 from markupsafe import Markup
 from dotenv import load_dotenv
 from models import Session, Data
@@ -19,6 +19,7 @@ load_dotenv()
 
 groq_api_key = os.getenv('lang-graph-api')
 
+# code block for printing colorful logging
 LOG_COLORS = {
     'DEBUG': '\033[94m',   # Blue
     'INFO': '\033[92m',    # Green
@@ -43,13 +44,14 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-
+# llm model
 llm_model = ChatGroq(
     api_key=groq_api_key,
     temperature=0.3,
     model="Llama3-8b-8192"
 )
 
+# function to extract data from (.pdf, .docx, .txt)
 def extract_text_from_doc(document: str) -> list[Document]:
 
     textual_data: list = []
@@ -77,13 +79,14 @@ def extract_text_from_doc(document: str) -> list[Document]:
 
     return textual_data
 
-
+# function to extract JSON object from LLM output
 def extract_json(text: str) -> str:
     match = re.search(r"\{[\s\S]*}", text)
     if match:
         return match.group()
     raise ValueError("No valid JSON object found in LLM output.")
 
+# function for normalizing the gap_scores
 def normalize_scores_to_100(scores: dict) -> dict:
     total = sum(scores.values())
     if total == 0:
@@ -95,6 +98,7 @@ def normalize_scores_to_100(scores: dict) -> dict:
         normalized[max_key] += diff
     return normalized
 
+# function to generate the gap score of user
 def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
 
     try:
@@ -154,7 +158,7 @@ def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
         logging.error(e)
         return False
 
-
+# function to generate gap summary of user
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
 
     try:
@@ -254,7 +258,7 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
         return False
 
 
-
+# function to start mock interview with model
 def mock_interview(query: str, difficulty: str) -> str:
     session = Session()
 
