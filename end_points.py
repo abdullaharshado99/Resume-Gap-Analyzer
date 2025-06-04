@@ -73,6 +73,18 @@ def delete_resume(resume_id):
         session.close()
 
 
+@app.route('/result/<int:data_id>')
+@login_required
+def result(data_id):
+    session = Session()
+    record = session.query(Data).filter_by(id=data_id, user_id=current_user.id).first()
+
+    if record:
+        gap_score = generate_gap_score(record.resume_data, record.job_description)
+        return render_template("response.html", data=record.summary, gap_data=gap_score)
+
+    return "Data not found", 404
+
 
 @app.route('/chatbot', methods=['POST', 'GET'])
 @login_required
@@ -96,7 +108,6 @@ def process():
         parsed_data = extract_text_from_doc(filepath)
         resume_text = parsed_data[0].page_content
         summary = generate_gap_summary(resume_text, job_description)
-        gap_score = generate_gap_score(resume_text, job_description)
 
         session = Session()
         new_data = Data(
@@ -112,7 +123,7 @@ def process():
         # print(f"The {summary=}")
         # print(f"The {gap_score=}")
 
-        return render_template("response.html", data=summary, gap_data=gap_score)
+        return redirect(url_for('result', data_id=new_data.id))
 
     return "Error: No file uploaded", 404
 
