@@ -163,57 +163,7 @@
       background: linear-gradient(to right, #4338ca, #4f46e5);
     }
 
-    .delete-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 100%;
-      margin-top: 0.25rem;
-      width: 8rem;
-      background: white;
-      border-radius: 0.375rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      z-index: 100;
-    }
-
-    /* Mobile-specific styles */
-    @media (max-width: 768px) {
-      .delete-menu {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        border-radius: 0;
-        margin-top: 0;
-        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
-        display: none;
-      }
-
-      .resume-item {
-        position: relative;
-      }
-
-      #mobileHistorySidebar {
-        z-index: 60;
-      }
-
-      #mobileHistoryOverlay {
-        z-index: 50;
-      }
-    }
-
-    .history-sidebar {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    }
-
-    .resume-item:hover {
-      transform: translateX(5px);
-    }
-
+    /* Loading Spinner Styles */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -250,6 +200,108 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    /* Resume Item Styles */
+    .resume-item {
+      display: flex;
+      align-items: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .resume-content {
+      flex: 1;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .resume-content:hover {
+      background: rgba(79, 70, 229, 0.1);
+    }
+
+    .menu-btn {
+      margin-left: 0.5rem;
+      padding: 0.5rem;
+      color: rgb(107, 114, 128);
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-btn:hover {
+      color: rgb(79, 70, 229);
+      background: rgba(156, 163, 175, 0.1);
+    }
+
+    .delete-btn {
+      margin-left: 0.5rem;
+      padding: 0.5rem;
+      color: blue;
+      border-radius: 9999px;
+      transition: all 0.3s ease;
+      transform: scale(0);
+      display: none;
+    }
+
+    .delete-btn:hover {
+      color: white;
+      background: rgb(239, 68, 68);
+    }
+
+    .show-delete .resume-content {
+      flex: 0.9;
+    }
+
+    .show-delete .delete-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: scale(1);
+    }
+
+    @media (min-width: 768px) {
+      .menu-btn {
+        display: none;
+      }
+      .delete-btn {
+        display: flex;
+        transform: scale(1);
+      }
+      .resume-content {
+        flex: 1;
+      }
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      #mobileHistorySidebar {
+        z-index: 60;
+      }
+
+      #mobileHistoryOverlay {
+        z-index: 50;
+      }
+    }
+
+    .history-sidebar {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     }
   </style>
 </head>
@@ -327,22 +379,17 @@
           <li class="text-indigo-600 italic text-center py-4">No History, Upload your resume</li>
         {% else %}
           {% for resume in user_data %}
-          <li class="resume-item flex items-center group relative">
-            <button onclick="loadResume({{ resume.id }})"
-                    class="flex-1 text-left px-4 py-3 bg-white/80 rounded-lg shadow hover:bg-indigo-50 transition truncate flex items-center">
+          <li class="resume-item">
+            <button onclick="loadResume({{ resume.id }})" class="resume-content">
               <i class="bi bi-file-earmark-text text-indigo-600 mr-2"></i>
               <span class="truncate">{{ resume.filename }}</span>
             </button>
-            <button onclick="toggleDeleteMenu(this, {{ resume.id }})"
-                    class="ml-2 p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100 transition">
+            <button class="menu-btn" onclick="toggleDeleteButton(this)">
               <i class="bi bi-three-dots-vertical"></i>
             </button>
-            <div class="delete-menu">
-              <button onclick="confirmDeleteResume({{ resume.id }}, this)"
-                      class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-md flex items-center">
-                <i class="bi bi-trash mr-2"></i> Delete
-              </button>
-            </div>
+            <button onclick="confirmDeleteResume({{ resume.id }})" class="delete-btn" title="Delete resume">
+              <i class="bi bi-trash"></i>
+            </button>
           </li>
           {% endfor %}
         {% endif %}
@@ -363,22 +410,17 @@
             <li class="text-indigo-600 italic text-center py-4">No History, Upload your resume</li>
           {% else %}
             {% for resume in user_data %}
-            <li class="resume-item flex items-center group relative">
-              <button onclick="loadResume({{ resume.id }})"
-                      class="flex-1 text-left px-4 py-3 bg-white/80 rounded-lg shadow hover:bg-indigo-50 transition truncate flex items-center">
+            <li class="resume-item">
+              <button onclick="loadResume({{ resume.id }})" class="resume-content">
                 <i class="bi bi-file-earmark-text text-indigo-600 mr-2"></i>
                 <span class="truncate">{{ resume.filename }}</span>
               </button>
-              <button onclick="toggleDeleteMenu(this, {{ resume.id }})"
-                      class="ml-2 p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100 transition">
+              <button class="menu-btn" onclick="toggleDeleteButton(this)">
                 <i class="bi bi-three-dots-vertical"></i>
               </button>
-              <div class="delete-menu">
-                <button onclick="confirmDeleteResume({{ resume.id }}, this)"
-                        class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-md flex items-center">
-                  <i class="bi bi-trash mr-2"></i> Delete
-                </button>
-              </div>
+              <button onclick="confirmDeleteResume({{ resume.id }})" class="delete-btn" title="Delete resume">
+                <i class="bi bi-trash"></i>
+              </button>
             </li>
             {% endfor %}
           {% endif %}
@@ -455,11 +497,13 @@
       </div>
     </div>
   </footer>
-    <!-- Loading Spinner -->
-    <div id="loadingOverlay" class="loading-overlay">
-      <div class="spinner"></div>
-      <div class="loading-text">Processing...</div>
-    </div>
+
+  <!-- Loading Spinner -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Processing...</div>
+  </div>
+
   <script>
     async function loadResume(id) {
       try {
@@ -537,60 +581,46 @@
       toggleHistorySidebar(false);
     });
 
-    function toggleDeleteMenu(button, resumeId) {
-      // Close all open menus first
-      document.querySelectorAll('.delete-menu').forEach(menu => {
-        if (menu !== button.nextElementSibling) {
-          menu.style.display = 'none';
+    // Toggle delete button visibility
+    function toggleDeleteButton(button) {
+      const resumeItem = button.closest('.resume-item');
+      resumeItem.classList.toggle('show-delete');
+
+      // Close other open delete buttons
+      document.querySelectorAll('.resume-item').forEach(item => {
+        if (item !== resumeItem && item.classList.contains('show-delete')) {
+          item.classList.remove('show-delete');
         }
       });
-
-      const menu = button.nextElementSibling;
-
-      if (menu.style.display === 'block') {
-        menu.style.display = 'none';
-      } else {
-        menu.style.display = 'block';
-
-        // For mobile, scroll to the bottom to show the delete menu
-        if (window.innerWidth <= 768) {
-          setTimeout(() => {
-            window.scrollTo({
-              top: document.body.scrollHeight,
-              behavior: 'smooth'
-            });
-          }, 50);
-        }
-
-        // Close menu when clicking outside
-        const clickHandler = (e) => {
-          if (!menu.contains(e.target) && e.target !== button) {
-            menu.style.display = 'none';
-            document.removeEventListener('click', clickHandler);
-          }
-        };
-
-        setTimeout(() => {
-          document.addEventListener('click', clickHandler);
-        }, 10);
-      }
     }
 
-    function confirmDeleteResume(resumeId, button) {
-      if (confirm("Are you sure you want to delete this resume?")) {
-        // Here you would typically make an AJAX call to delete the resume
+    // Close delete button when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.resume-item') && !e.target.closest('.delete-btn')) {
+        document.querySelectorAll('.resume-item').forEach(item => {
+          item.classList.remove('show-delete');
+        });
+      }
+    });
+
+    function confirmDeleteResume(resumeId) {
+      const filename = document.querySelector(`.resume-item button[onclick="loadResume(${resumeId})"] .truncate`).textContent;
+      const confirmed = confirm(`Are you sure you want to delete "${filename}"?`);
+
+      if (confirmed) {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
         fetch(`/delete_resume/${resumeId}`, {
           method: 'DELETE',
         })
         .then(response => response.json())
         .then(data => {
+          document.getElementById('loadingOverlay').style.display = 'none';
           if (data.success) {
-            // Remove the resume item from both desktop and mobile lists
             document.querySelectorAll(`.resume-item button[onclick="loadResume(${resumeId})"]`).forEach(el => {
               el.closest('.resume-item').remove();
             });
 
-            // If no resumes left, show message
             if (document.querySelectorAll('.resume-item').length === 0) {
               document.querySelectorAll('#resumeList, #mobileResumeList').forEach(list => {
                 list.innerHTML = '<li class="text-indigo-600 italic text-center py-4">No History, Upload your resume</li>';
@@ -601,14 +631,27 @@
           }
         })
         .catch(error => {
+          document.getElementById('loadingOverlay').style.display = 'none';
           console.error('Error:', error);
           alert('Failed to delete resume');
         });
+      } else {
+        // Hide the delete button if user cancels
+        document.querySelectorAll(`.resume-item button[onclick="loadResume(${resumeId})"]`).forEach(el => {
+          el.closest('.resume-item').classList.remove('show-delete');
+        });
       }
-
-      // Close the delete menu
-      button.closest('.delete-menu').style.display = 'none';
     }
+
+    // Add loading spinner on form submission
+    document.getElementById('resumeForm').addEventListener('submit', function() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    });
+
+    // Hide spinner when page is fully loaded
+    window.addEventListener('load', function() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    });
 
     // Animation on scroll
     document.addEventListener('DOMContentLoaded', function() {
@@ -625,16 +668,6 @@
       document.querySelectorAll('.resume-item, #resumeForm').forEach(el => {
         observer.observe(el);
       });
-    });
-
-    // Add loading spinner on form submission
-    document.getElementById('resumeForm').addEventListener('submit', function() {
-      document.getElementById('loadingOverlay').style.display = 'flex';
-    });
-
-    // Hide spinner when page is fully loaded
-    window.addEventListener('load', function() {
-      document.getElementById('loadingOverlay').style.display = 'none';
     });
   </script>
 </body>
