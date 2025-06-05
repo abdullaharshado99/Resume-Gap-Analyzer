@@ -29,6 +29,30 @@ def load_user(user_id):
 def home():
     return render_template("home_page.html")
 
+@app.route('/terms')
+def terms():
+    return render_template("terms.html")
+
+@app.route('/privacy')
+def privacy():
+    return render_template("privacy.html")
+
+@app.route('/blog')
+def blog():
+    return render_template("blog.html")
+
+@app.route('/faqs')
+def faqs():
+    return render_template("faqs.html")
+
+@app.route('/tips')
+def tips():
+    return render_template("tips.html")
+
+@app.route('/interview_guide')
+def interview_guide():
+    return render_template("interview_guide.html")
+
 
 @app.route('/data_collector', methods=['POST', 'GET'])
 @login_required
