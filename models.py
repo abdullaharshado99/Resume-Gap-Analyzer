@@ -1,9 +1,12 @@
+import os
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 
 bcrypt = Bcrypt()
+
+os.makedirs("instance", exist_ok=True)
 
 DATABASE_URL = 'sqlite:///instance/users.db'
 

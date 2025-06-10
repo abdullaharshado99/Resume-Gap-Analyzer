@@ -1,7 +1,7 @@
 import os
 import re
-import logging
 import json
+import logging
 from markupsafe import Markup
 from dotenv import load_dotenv
 from models import Session, Data
@@ -19,6 +19,7 @@ load_dotenv()
 
 groq_api_key = os.getenv('lang-graph-api')
 
+# code block for printing colorful logging
 LOG_COLORS = {
     'DEBUG': '\033[94m',   # Blue
     'INFO': '\033[92m',    # Green
@@ -43,13 +44,14 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-
+# llm model
 llm_model = ChatGroq(
     api_key=groq_api_key,
     temperature=0.3,
     model="Llama3-8b-8192"
 )
 
+# function to extract data from (.pdf, .docx, .txt)
 def extract_text_from_doc(document: str) -> list[Document]:
 
     textual_data: list = []
@@ -77,13 +79,14 @@ def extract_text_from_doc(document: str) -> list[Document]:
 
     return textual_data
 
-
+# function to extract JSON object from LLM output
 def extract_json(text: str) -> str:
     match = re.search(r"\{[\s\S]*}", text)
     if match:
         return match.group()
     raise ValueError("No valid JSON object found in LLM output.")
 
+# function for normalizing the gap_scores
 def normalize_scores_to_100(scores: dict) -> dict:
     total = sum(scores.values())
     if total == 0:
@@ -95,43 +98,40 @@ def normalize_scores_to_100(scores: dict) -> dict:
         normalized[max_key] += diff
     return normalized
 
-def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
-
+# function to generate the gap score of user
+def generate_gap_score(parsed_data: str, job_desc: str) -> dict | bool:
     try:
         gap_score_prompt = PromptTemplate(
             input_variables=["resume_data", "job_description"],
             template="""
             You are an expert career advisor and hiring consultant.
-    
+
             Your task is to analyze a candidate's resume against a job description for a specific role.
-    
+
             Below is the job description:
             ---
             {job_description}
             ---
-    
+
             Below is the candidate’s resume:
             ---
             {resume_data}
             ---
-    
-            Please return a JSON object that evaluates how well the resume matches the job description.
-    
-            IMPORTANT RULES:
-            - Distribute a total of 100 points across the following four categories:
-                * "Technical Lack"
-                * "Experience Lack"
-                * "Domain Lack"
-                * "Soft Skills Lack"
-            - The sum of all four scores MUST equal exactly 100.
-            - Score proportionally based on how well the resume meets each category relative to the others.
-            - Output ONLY a valid JSON object in the format below:
-    
+
+            Please return a JSON object that evaluates how much each skill category is lacking in the resume,
+            where each category is scored out of 100:
+
+            SCORING GUIDELINES:
+            - A higher score means the candidate lacks more in that area (i.e., 100 = completely missing, 0 = perfectly fulfilled).
+            - Evaluate each category independently based on the job description and resume.
+
+            Return ONLY a valid JSON object like this:
+
             {{
-              "Technical Lack": <score>,
-              "Experience Lack": <score>,
-              "Domain Lack": <score>,
-              "Soft Skills Lack": <score>
+              "Technical Lack": <0-100>,
+              "Experience Lack": <0-100>,
+              "Domain Lack": <0-100>,
+              "Soft Skills Lack": <0-100>
             }}
             """
         )
@@ -145,16 +145,72 @@ def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
         json_text = extract_json(raw_output.content)
         gap_scores = json.loads(json_text)
 
-        # # Optional safety check
-        # gap_scores = normalize_scores_to_100(gap_scores)
-
         return gap_scores
 
     except Exception as e:
-        logging.error(e)
+        logging.error(f"Gap score generation failed: {e}")
         return False
 
+# def generate_gap_score(parsed_data: str, job_desc: str) -> str|bool:
+#
+#     try:
+#         gap_score_prompt = PromptTemplate(
+#             input_variables=["resume_data", "job_description"],
+#             template="""
+#             You are an expert career advisor and hiring consultant.
+#
+#             Your task is to analyze a candidate's resume against a job description for a specific role.
+#
+#             Below is the job description:
+#             ---
+#             {job_description}
+#             ---
+#
+#             Below is the candidate’s resume:
+#             ---
+#             {resume_data}
+#             ---
+#
+#             Please return a JSON object that evaluates how well the resume matches the job description.
+#
+#             IMPORTANT RULES:
+#             - Distribute a total of 100 points across the following four categories:
+#                 * "Technical Lack"
+#                 * "Experience Lack"
+#                 * "Domain Lack"
+#                 * "Soft Skills Lack"
+#             - The sum of all four scores MUST equal exactly 100.
+#             - Score proportionally based on how well the resume meets each category relative to the others.
+#             - Output ONLY a valid JSON object in the format below:
+#
+#             {{
+#               "Technical Lack": <score>,
+#               "Experience Lack": <score>,
+#               "Domain Lack": <score>,
+#               "Soft Skills Lack": <score>
+#             }}
+#             """
+#         )
+#
+#         filled_prompt = gap_score_prompt.format(
+#             job_description=job_desc,
+#             resume_data=parsed_data
+#         )
+#
+#         raw_output = llm_model.invoke(filled_prompt)
+#         json_text = extract_json(raw_output.content)
+#         gap_scores = json.loads(json_text)
+#
+#         # # Optional safety check
+#         # gap_scores = normalize_scores_to_100(gap_scores)
+#
+#         return gap_scores
+#
+#     except Exception as e:
+#         logging.error(e)
+#         return False
 
+# function to generate gap summary of user
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
 
     try:
@@ -254,7 +310,7 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
         return False
 
 
-
+# function to start mock interview with model
 def mock_interview(query: str, difficulty: str) -> str:
     session = Session()
 

@@ -267,6 +267,15 @@
   </footer>
 
   <script>
+    // Load conversation from local storage when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedConversation = localStorage.getItem('mockInterviewConversation');
+        if (savedConversation) {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = savedConversation;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    });
 
     function toggleMenu() {
       const menu = document.getElementById("mobileMenu");
@@ -309,6 +318,10 @@
       msgDiv.appendChild(bubble);
       chatBox.appendChild(msgDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Save conversation to local storage
+      localStorage.setItem('mockInterviewConversation', chatBox.innerHTML);
+
       return bubble;
     }
 
@@ -336,6 +349,10 @@
         typingBubble.innerHTML = data.response
           ? data.response.split(/(?<=[.?!])\s+(?=[A-Z])/g).map(p => `<p>${p}</p>`).join('')
           : "Sorry, something went wrong.";
+
+        // Save conversation to local storage after response
+        const chatBox = document.getElementById("chatBox");
+        localStorage.setItem('mockInterviewConversation', chatBox.innerHTML);
       } catch (err) {
         console.error(err);
         typingBubble.innerHTML = "<p>Error connecting to the assistant.</p>";
