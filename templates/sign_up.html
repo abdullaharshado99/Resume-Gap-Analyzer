@@ -284,9 +284,14 @@
             <i class="bi bi-eye-slash text-gray-400 hover:text-gray-600 cursor-pointer transition"></i>
           </button>
         </div>
-        <div class="flex mt-1">
-          <div id="password-strength" class="password-strength strength-0 rounded-full"></div>
+
+        <div class="mt-1">
+          <div class="w-full h-1 bg-gray-200 rounded-full">
+            <div id="password-strength" class="h-full rounded-full transition-all duration-300"></div>
+          </div>
+          <div id="strength-label" class="text-sm mt-1 text-gray-600"></div>
         </div>
+
       </div>
 
       <div class="flex items-start">
@@ -325,29 +330,29 @@
       eyeIcon.classList.toggle('bi-eye-slash');
     });
 
-    // Password strength checker
     function checkPasswordStrength(password) {
       const strengthBar = document.getElementById('password-strength');
+      const label = document.getElementById('strength-label');
       let strength = 0;
 
-      // Check password length
       if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
       if (password.length >= 12) strength++;
 
-      // Check for mixed case
-      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      const strengths = [
+        { width: '20%', color: 'bg-red-500', label: 'Very Weak' },
+        { width: '40%', color: 'bg-orange-500', label: 'Weak' },
+        { width: '60%', color: 'bg-yellow-500', label: 'Moderate' },
+        { width: '80%', color: 'bg-blue-500', label: 'Strong' },
+        { width: '100%', color: 'bg-green-500', label: 'Very Strong' }
+      ];
 
-      // Check for numbers
-      if (/\d/.test(password)) strength++;
-
-      // Check for special chars
-      if (/[^A-Za-z0-9]/.test(password)) strength++;
-
-      // Limit strength to 4
-      strength = Math.min(strength, 4);
-
-      // Update strength bar
-      strengthBar.className = 'password-strength strength-' + strength + ' rounded-full';
+      const level = strengths[strength] || strengths[0];
+      strengthBar.className = `${level.color} h-full rounded-full transition-all duration-300`;
+      strengthBar.style.width = level.width;
+      label.textContent = level.label;
     }
 
     // Auto-dismiss flash messages after 5 seconds
