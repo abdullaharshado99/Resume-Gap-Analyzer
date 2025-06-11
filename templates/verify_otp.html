@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Verify OTP - AI Career Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4f46e5',
+            secondary: '#6366f1',
+            dark: '#1e1b4b',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+            'display': ['Poppins', 'ui-sans-serif']
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'fade-in': 'fadeIn 1s ease-in',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);
+    }
+
+    .input-field {
+      transition: all 0.3s ease;
+      border: 1px solid rgba(79, 70, 229, 0.2);
+    }
+
+    .input-field:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .floating-shapes {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .shape {
+      position: absolute;
+      opacity: 0.3;
+      border-radius: 50%;
+      filter: blur(40px);
+    }
+
+    .shape-1 {
+      width: 300px;
+      height: 300px;
+      background: #4f46e5;
+      top: 20%;
+      left: 10%;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape-2 {
+      width: 200px;
+      height: 200px;
+      background: #a855f7;
+      top: 60%;
+      left: 70%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    .shape-3 {
+      width: 150px;
+      height: 150px;
+      background: #ec4899;
+      top: 30%;
+      left: 80%;
+      animation: float 7s ease-in-out infinite 2s;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-50 to-indigo-100 font-sans">
+  <div class="floating-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <div class="glass-card p-8 sm:p-10 w-full max-w-md animate-fade-in">
+    <div class="flex justify-center mb-6">
+      <div class="flex items-center space-x-2">
+        <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+        </svg>
+        <h1 class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Career Assistant</h1>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-center text-indigo-800 mb-2 font-display">Verify Your Email</h2>
+    <p class="text-center text-gray-600 mb-6">Enter the OTP sent to your registered email address</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div id="flash-message" class="text-sm text-center mb-4 {% if category == 'danger' %}text-red-500{% else %}text-green-600{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+
+    <form method="post" class="space-y-5">
+      <div>
+        <label for="otp" class="block text-sm font-medium text-gray-700 mb-1">OTP</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="bi bi-key text-gray-400"></i>
+          </div>
+          <input type="text" id="otp" name="otp" placeholder="Enter OTP" required
+                 class="input-field w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400">
+        </div>
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="bi bi-lock text-gray-400"></i>
+          </div>
+          <input type="password" id="password" name="password" placeholder="Enter New Password" required
+                 class="input-field w-full pl-10 pr-10 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400"
+                 pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$"
+                 title="Password must be at least 8 characters and include letters and numbers"
+                 oninput="checkPasswordStrength(this.value)">
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onclick="togglePasswordVisibility()">
+            <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
+          </div>
+        </div>
+        <div class="mt-2 h-2 w-full bg-gray-200 rounded-full">
+          <div id="password-strength" class="h-full rounded-full transition-all duration-300"></div>
+        </div>
+        <p id="strength-label" class="text-sm mt-1 text-gray-600"></p>
+      </div>
+
+      <button type="submit"
+              class="btn-animated w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center space-x-2">
+        <i class="bi bi-arrow-repeat"></i>
+        <span>Reset Password</span>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password');
+      const icon = document.getElementById('togglePasswordIcon');
+      const type = passwordInput.type === 'password' ? 'text' : 'password';
+      passwordInput.type = type;
+      icon.classList.toggle('bi-eye');
+      icon.classList.toggle('bi-eye-slash');
+    }
+
+    function checkPasswordStrength(password) {
+      const strengthBar = document.getElementById('password-strength');
+      const label = document.getElementById('strength-label');
+      let strength = 0;
+
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      if (password.length >= 12) strength++;
+
+      const strengths = [
+        { width: '20%', color: 'bg-red-500', label: 'Very Weak' },
+        { width: '40%', color: 'bg-orange-500', label: 'Weak' },
+        { width: '60%', color: 'bg-yellow-500', label: 'Moderate' },
+        { width: '80%', color: 'bg-blue-500', label: 'Strong' },
+        { width: '100%', color: 'bg-green-500', label: 'Very Strong' }
+      ];
+
+      const level = strengths[strength] || strengths[0];
+      strengthBar.className = `${level.color} h-full rounded-full transition-all duration-300`;
+      strengthBar.style.width = level.width;
+      label.textContent = level.label;
+    }
+
+    setTimeout(() => {
+      const msg = document.getElementById('flash-message');
+      if (msg) {
+        msg.style.transition = 'opacity 0.5s ease';
+        msg.style.opacity = 0;
+        setTimeout(() => msg.remove(), 500); // Remove from DOM after fade
+      }
+  }, 5000);
+  </script>
+</body>
+</html>
+
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Verify OTP - AI Career Assistant</title>-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--  <script src="https://cdn.tailwindcss.com"></script>-->
+<!--  <script>-->
+<!--    tailwind.config = {-->
+<!--      theme: {-->
+<!--        extend: {-->
+<!--          colors: {-->
+<!--            primary: '#4f46e5',-->
+<!--            secondary: '#6366f1',-->
+<!--            dark: '#1e1b4b',-->
+<!--          },-->
+<!--          fontFamily: {-->
+<!--            'sans': ['Inter', 'ui-sans-serif', 'system-ui'],-->
+<!--            'display': ['Poppins', 'ui-sans-serif']-->
+<!--          },-->
+<!--          animation: {-->
+<!--            'float': 'float 6s ease-in-out infinite',-->
+<!--            'fade-in': 'fadeIn 1s ease-in',-->
+<!--            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'-->
+<!--          },-->
+<!--          keyframes: {-->
+<!--            float: {-->
+<!--              '0%, 100%': { transform: 'translateY(0)' },-->
+<!--              '50%': { transform: 'translateY(-20px)' },-->
+<!--            },-->
+<!--            fadeIn: {-->
+<!--              '0%': { opacity: '0' },-->
+<!--              '100%': { opacity: '1' },-->
+<!--            }-->
+<!--          }-->
+<!--        }-->
+<!--      }-->
+<!--    }-->
+<!--  </script>-->
+<!--  <style>-->
+<!--    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');-->
+
+<!--    .glass-card {-->
+<!--      background: rgba(255, 255, 255, 0.15);-->
+<!--      backdrop-filter: blur(16px);-->
+<!--      -webkit-backdrop-filter: blur(16px);-->
+<!--      border-radius: 24px;-->
+<!--      border: 1px solid rgba(255, 255, 255, 0.3);-->
+<!--      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);-->
+<!--      transition: all 0.3s ease;-->
+<!--    }-->
+
+<!--    .glass-card:hover {-->
+<!--      transform: translateY(-5px);-->
+<!--      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.25);-->
+<!--    }-->
+
+<!--    .input-field {-->
+<!--      transition: all 0.3s ease;-->
+<!--      border: 1px solid rgba(79, 70, 229, 0.2);-->
+<!--    }-->
+
+<!--    .input-field:focus {-->
+<!--      border-color: #4f46e5;-->
+<!--      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);-->
+<!--    }-->
+
+<!--    .floating-shapes {-->
+<!--      position: absolute;-->
+<!--      width: 100%;-->
+<!--      height: 100%;-->
+<!--      overflow: hidden;-->
+<!--      top: 0;-->
+<!--      left: 0;-->
+<!--      z-index: -1;-->
+<!--    }-->
+
+<!--    .shape {-->
+<!--      position: absolute;-->
+<!--      opacity: 0.3;-->
+<!--      border-radius: 50%;-->
+<!--      filter: blur(40px);-->
+<!--    }-->
+
+<!--    .shape-1 {-->
+<!--      width: 300px;-->
+<!--      height: 300px;-->
+<!--      background: #4f46e5;-->
+<!--      top: 20%;-->
+<!--      left: 10%;-->
+<!--      animation: float 8s ease-in-out infinite;-->
+<!--    }-->
+
+<!--    .shape-2 {-->
+<!--      width: 200px;-->
+<!--      height: 200px;-->
+<!--      background: #a855f7;-->
+<!--      top: 60%;-->
+<!--      left: 70%;-->
+<!--      animation: float 10s ease-in-out infinite reverse;-->
+<!--    }-->
+
+<!--    .shape-3 {-->
+<!--      width: 150px;-->
+<!--      height: 150px;-->
+<!--      background: #ec4899;-->
+<!--      top: 30%;-->
+<!--      left: 80%;-->
+<!--      animation: float 7s ease-in-out infinite 2s;-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+
+<!--<body class="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-50 to-indigo-100 font-sans">-->
+<!--  <div class="floating-shapes">-->
+<!--    <div class="shape shape-1"></div>-->
+<!--    <div class="shape shape-2"></div>-->
+<!--    <div class="shape shape-3"></div>-->
+<!--  </div>-->
+
+<!--  <div class="glass-card p-8 sm:p-10 w-full max-w-md animate-fade-in">-->
+<!--    <div class="flex justify-center mb-6">-->
+<!--      <div class="flex items-center space-x-2">-->
+<!--        <svg class="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">-->
+<!--          <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />-->
+<!--        </svg>-->
+<!--        <h1 class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Career Assistant</h1>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <h2 class="text-2xl font-bold text-center text-indigo-800 mb-2 font-display">Verify Your Email</h2>-->
+<!--    <p class="text-center text-gray-600 mb-6">Enter the OTP sent to your registered email address</p>-->
+
+<!--    {% with messages = get_flashed_messages(with_categories=true) %}-->
+<!--      {% for category, message in messages %}-->
+<!--        <p class="text-sm text-center mb-4 {% if category == 'danger' %}text-red-500{% else %}text-green-600{% endif %}">-->
+<!--          {{ message }}-->
+<!--        </p>-->
+<!--      {% endfor %}-->
+<!--    {% endwith %}-->
+
+<!--<form method="post" class="space-y-5">-->
+<!--  <div>-->
+<!--    <label for="otp" class="block text-sm font-medium text-gray-700 mb-1">OTP</label>-->
+<!--    <div class="relative">-->
+<!--      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">-->
+<!--        <i class="bi bi-key text-gray-400"></i>-->
+<!--      </div>-->
+<!--      <input type="text" id="otp" name="otp" placeholder="Enter OTP" required-->
+<!--             class="input-field w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400">-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div>-->
+<!--    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>-->
+<!--    <div class="relative">-->
+<!--      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">-->
+<!--        <i class="bi bi-lock text-gray-400"></i>-->
+<!--      </div>-->
+<!--      <input type="password" id="password" name="password" placeholder="Enter New Password" required-->
+<!--             class="input-field w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400"-->
+<!--             pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"-->
+<!--             title="Password must be at least 8 characters and include both letters and numbers"-->
+<!--             oninput="checkPasswordStrength(this.value)">-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <button type="submit"-->
+<!--          class="btn-animated w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center space-x-2">-->
+<!--    <i class="bi bi-arrow-repeat"></i>-->
+<!--    <span>Reset Password</span>-->
+<!--  </button>-->
+<!--</form>-->
+
+<!--  </div>-->
+
+<!--  <script>-->
+<!--    // Password visibility toggle-->
+<!--    const toggleSignup = document.getElementById('toggleSignupPassword');-->
+<!--    const signupPassword = document.getElementById('signupPassword');-->
+<!--    const eyeIcon = toggleSignup.querySelector('i');-->
+
+<!--    toggleSignup.addEventListener('click', function () {-->
+<!--      const type = signupPassword.getAttribute('type') === 'password' ? 'text' : 'password';-->
+<!--      signupPassword.setAttribute('type', type);-->
+<!--      eyeIcon.classList.toggle('bi-eye');-->
+<!--      eyeIcon.classList.toggle('bi-eye-slash');-->
+<!--    });-->
+
+<!--    // Password strength checker-->
+<!--    function checkPasswordStrength(password) {-->
+<!--      const strengthBar = document.getElementById('password-strength');-->
+<!--      let strength = 0;-->
+
+<!--      // Check password length-->
+<!--      if (password.length >= 8) strength++;-->
+<!--      if (password.length >= 12) strength++;-->
+
+<!--      // Check for mixed case-->
+<!--      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;-->
+
+<!--      // Check for numbers-->
+<!--      if (/\d/.test(password)) strength++;-->
+
+<!--      // Check for special chars-->
+<!--      if (/[^A-Za-z0-9]/.test(password)) strength++;-->
+
+<!--      // Limit strength to 4-->
+<!--      strength = Math.min(strength, 4);-->
+
+<!--      // Update strength bar-->
+<!--      strengthBar.className = 'password-strength strength-' + strength + ' rounded-full';-->
+<!--    }-->
+<!--  </script>-->
+<!--</body>-->
+
+<!--</html>-->
