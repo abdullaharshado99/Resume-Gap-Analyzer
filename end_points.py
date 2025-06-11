@@ -208,7 +208,6 @@ def chatbot():
 @login_required
 def final_report():
     session = Session()
-
     record = session.query(Data).filter_by(user_id=current_user.id).order_by(Data.id.desc()).first()
 
     if record and record.resume_match_score:
@@ -217,7 +216,7 @@ def final_report():
     else:
         resume_gap_score = interview_dict = {}
 
-    return render_template('final_report.html', resume_score_data=resume_gap_score, interview_score_data=interview_dict)
+    return render_template('final_report.html', resume_score_data=resume_gap_score, interview_score_data=interview_dict, user=current_user)
 
 
 @app.route('/process', methods=['POST'])
