@@ -1,10 +1,14 @@
 apscheduler
 dotenv
 docx2txt
+email_validator
 flask
 flask_sqlalchemy
 flask_bcrypt
 flask_login
+flask_mail
+flask-wtf
+itsdangerous
 jupyter
 jose
 langchain
