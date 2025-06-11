@@ -1,6 +1,10 @@
 import os
 import logging
 import secrets
+import random, datetime
+from dotenv import load_dotenv
+from flask_mail import Mail, Message
+from flask import session as flask_session
 from models import engine, Session, User, bcrypt, Base, Data
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -8,8 +12,11 @@ from pipeline import extract_text_from_doc, generate_gap_summary, generate_gap_s
 
 secret_key = secrets.token_hex(16)
 
+load_dotenv()
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secret_key
+app.config['WTF_CSRF_ENABLED'] = True
 
 bcrypt.init_app(app)
 
@@ -20,38 +27,117 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
+
+# Flask-Mail config
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME='abdullaharshado99@gmail.com',
+    MAIL_PASSWORD=os.getenv('email_pass')
+)
+
+mail = Mail(app)
+
+# Store OTPs temporarily
+otp_store = {}
+
+
 @login_manager.user_loader
 def load_user(user_id):
     session = get_session()
     return session.get(User, int(user_id))
 
+
 @app.route('/')
 def home():
     return render_template("home_page.html")
+
 
 @app.route('/terms')
 def terms():
     return render_template("terms.html")
 
+
 @app.route('/privacy')
 def privacy():
     return render_template("privacy.html")
+
 
 @app.route('/blog')
 def blog():
     return render_template("blog.html")
 
+
 @app.route('/faqs')
 def faqs():
     return render_template("faqs.html")
+
 
 @app.route('/tips')
 def tips():
     return render_template("tips.html")
 
+
 @app.route('/interview_guide')
 def interview_guide():
     return render_template("interview_guide.html")
+
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        session = Session()
+        user = session.query(User).filter_by(email=email).first()
+        if user:
+            otp = str(random.randint(100000, 999999))
+            otp_store[email] = {
+                'otp': otp,
+                'expires': datetime.datetime.now() + datetime.timedelta(minutes=5)
+            }
+            msg = Message('AI Career Assistant - Your OTP for Password Reset', sender=app.config['MAIL_USERNAME'], recipients=[email])
+            msg.body = f'Your OTP is: {otp}, this OTP is only validate for 5 minutes, regenerate new otp after 5 minutes.'
+            mail.send(msg)
+            flask_session['reset_email'] = email
+            flash("OTP sent to your email.", "info")
+            return redirect(url_for('verify_otp'))
+        else:
+            flash("Email not found.", "danger")
+    return render_template('forgot_password.html')
+
+
+@app.route('/verify-otp', methods=['GET', 'POST'])
+def verify_otp():
+    email = flask_session.get('reset_email')
+    if not email:
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        entered_otp = request.form['otp']
+        new_password = request.form['password']
+        record = otp_store.get(email)
+
+        if not record:
+            flash("OTP not found or expired. Try again.", "danger")
+            return redirect(url_for('forgot_password'))
+
+        if record['otp'] == entered_otp and datetime.datetime.now() < record['expires']:
+            db = Session()
+            user = db.query(User).filter_by(email=email).first()
+            if user:
+                user.set_password(new_password)
+                db.commit()
+                otp_store.pop(email, None)
+                flask_session.pop('reset_email', None)
+                flash("Password updated successfully!", "success")
+                return redirect(url_for('signin'))
+            else:
+                flash("User not found.", "danger")
+        else:
+            flash("Invalid or expired OTP.", "danger")
+
+    return render_template('verify_otp.html')
 
 
 @app.route('/data_collector', methods=['POST', 'GET'])
