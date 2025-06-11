@@ -2,7 +2,7 @@ import os
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, JSON
 
 bcrypt = Bcrypt()
 
@@ -45,6 +45,9 @@ class Data(Base):
     summary = Column(String(5000), nullable=False)
     resume_data = Column(String(5000), nullable=False)
     job_description = Column(String(5000), nullable=False)
+    resume_match_score = Column(JSON, nullable=True)
+    interview_match_score = Column(JSON, nullable=True)
+
 
     user = relationship('User', back_populates='data')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)

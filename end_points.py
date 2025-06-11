@@ -191,6 +191,8 @@ def result(data_id):
 
     if record:
         gap_score = generate_gap_score(record.resume_data, record.job_description)
+        record.resume_match_score = gap_score
+        session.commit()
         return render_template("response.html", data=record.summary, gap_data=gap_score)
 
     return "Data not found", 404
@@ -200,6 +202,22 @@ def result(data_id):
 @login_required
 def chatbot():
     return render_template('mock_interview.html')
+
+
+@app.route('/final_report', methods=['POST', 'GET'])
+@login_required
+def final_report():
+    session = Session()
+
+    record = session.query(Data).filter_by(user_id=current_user.id).order_by(Data.id.desc()).first()
+
+    if record and record.resume_match_score:
+        resume_gap_score = record.resume_match_score
+        interview_dict = {"Confidence": 30, "Communication": 25, "Problem Solving": 25, "Technical Depth": 20}
+    else:
+        resume_gap_score = interview_dict = {}
+
+    return render_template('final_report.html', resume_score_data=resume_gap_score, interview_score_data=interview_dict)
 
 
 @app.route('/process', methods=['POST'])
