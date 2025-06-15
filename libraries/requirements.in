@@ -6,6 +6,7 @@ flask
 flask_sqlalchemy
 flask_bcrypt
 flask_login
+flask-cors
 flask_mail
 flask-wtf
 itsdangerous
