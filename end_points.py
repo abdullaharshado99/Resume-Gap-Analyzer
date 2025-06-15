@@ -2,6 +2,7 @@ import os
 import logging
 import secrets
 import random, datetime
+from flask_cors import CORS
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from flask import session as flask_session
@@ -36,6 +37,8 @@ app.config.update(
     MAIL_USERNAME='abdullaharshado99@gmail.com',
     MAIL_PASSWORD=os.getenv('email_pass')
 )
+
+CORS(app)
 
 mail = Mail(app)
 
