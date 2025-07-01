@@ -249,9 +249,6 @@ def process():
         )
         session.add(new_data)
         session.commit()
-        # print(f"The {parsed_data=}")
-        # print(f"The {summary=}")
-        # print(f"The {gap_score=}")
 
         return redirect(url_for('result', data_id=new_data.id))
 
