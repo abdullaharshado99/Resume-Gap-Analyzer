@@ -1,6 +1,5 @@
 import os
 import re
-import json
 import logging
 from markupsafe import Markup
 from dotenv import load_dotenv
@@ -91,10 +90,23 @@ def normalize_label(label: str) -> str:
     label = label.strip().title()
     return label if label in VALID_LABELS else "Other"
 
-# function to clean and extract data
+# function to clean the text
+def clean_summary_to_plain_text(summary: str) -> str:
+    try:
+        summary = re.sub(r'(<br\s*/?>)+', '\n', summary, flags=re.IGNORECASE)
+        summary = re.sub(r'<[^>]+>', '', summary)
+        summary = re.sub(r'\n+', '\n', summary)
+        summary = "\n".join(line.strip() for line in summary.strip().splitlines())
+        summary = re.sub(r'[^\w\s.,:;!?\'\"()/-]', '', summary)
+
+        return summary.strip()
+    except Exception as e:
+        raise e
+
+
+# function to extract data from summary text
 def extract_gap_lines(summary: str) -> list[str]:
-    cleaned_summary = re.sub(r'(<br\s*/?>)+', '\n', summary, flags=re.IGNORECASE)
-    cleaned_summary = re.sub(r'<.*?>', '', cleaned_summary, flags=re.IGNORECASE)
+    cleaned_summary = clean_summary_to_plain_text(summary)
 
     sections = re.findall(
         r"(SUMMARY OF FIT|GAP SUMMARY|KEY GAPS IDENTIFIED|GAPS & MISSING REQUIREMENTS|ACTIONABLE RECOMMENDATIONS|DETAILED OBSERVATIONS|RECOMMENDATIONS|REJECTION RISK)\n(.*?)(?=\n[A-Z\s]+(?:\n|$)|\Z)",
@@ -167,7 +179,7 @@ def score_labeled_clusters(labeled_clusters: dict) -> dict:
     return full_score_dict
 
 # function to generate gap match score
-def generate_gap_score(summary_text: str) -> dict | bool:
+def generate_gap_score(summary_text: str) -> dict:
     try:
         gap_lines = extract_gap_lines(summary_text)
         if not gap_lines:
@@ -185,7 +197,7 @@ def generate_gap_score(summary_text: str) -> dict | bool:
         return score_labeled_clusters(labeled_clusters)
     except Exception as e:
         logging.error(e)
-        return False
+        return {"Experience": 0, "Domain Knowledge": 0, "Soft Skills": 0, "Technical": 0}
 
 # function to generate gap summary of user
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
@@ -287,7 +299,7 @@ def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
         return False
 
 
-# function to start mock interview with model
+#function to start mock interview with model
 def mock_interview(query: str, difficulty: str) -> str:
     session = Session()
 
@@ -308,30 +320,30 @@ def mock_interview(query: str, difficulty: str) -> str:
         ---
         {job_description}
         ---
-        
+
         Below is the candidate's resume:
         ---
         {resume_text}
         ---
-        
+
         Below is the difficulty level:
         ---
         {difficulty}
         ---
-        
+
         Using this information, generate a mock interview. The interview should consist of:
-        
+
         1. 3 Behavioral Questions based on leadership, collaboration, and self-direction.
         2. 4 Technical Questions based on the required AI/ML pipeline experience (data processing, model training, MLOps).
         3. 2 Domain-Specific Questions related to cybersecurity or network traffic analytics.
         4. 1 Bonus or edge-case question testing adaptability, research, or latest trends in AI/ML.
-        
+
         Format:
         - Question #
         - Type: [Behavioral/Technical/Domain-Specific/Bonus]
         - Question Text
         - Optional: Hints or what a strong answer would include.
-        
+
         Keep the tone professional and focused. Ask questions tailored to the candidate’s background, projects, and any gaps or mismatches between the resume and the job description."""),
 
         MessagesPlaceholder(variable_name="history"),
@@ -342,7 +354,7 @@ def mock_interview(query: str, difficulty: str) -> str:
 
     chain_with_history = RunnableWithMessageHistory(
         chain,
-        lambda session_id: FileChatMessageHistory(f"instance/history_{current_user.id}.json"),
+        lambda session_id: FileChatMessageHistory(f"instance/history_{current_user.id}_{user_data.filename}.json"),
         input_messages_key="input",
         history_messages_key="history"
     )
