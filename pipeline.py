@@ -108,15 +108,42 @@ def clean_summary_to_plain_text(summary: str) -> str:
 def extract_gap_lines(summary: str) -> list[str]:
     cleaned_summary = clean_summary_to_plain_text(summary)
 
-    sections = re.findall(
+    sections = []
+    section_patterns = [
         r"(SUMMARY OF FIT|GAP SUMMARY|KEY GAPS IDENTIFIED|GAPS & MISSING REQUIREMENTS|ACTIONABLE RECOMMENDATIONS|DETAILED OBSERVATIONS|RECOMMENDATIONS|REJECTION RISK)\n(.*?)(?=\n[A-Z\s]+(?:\n|$)|\Z)",
-        cleaned_summary, flags=re.DOTALL | re.IGNORECASE
-    )
+        r"(Gaps?.*?)\n(.*?)(?=\n[A-Z][a-z]+(?:\n|$)|\Z)",
+        r"(Key (?:Gaps|Findings).*?)\n(.*?)(?=\n\w|\Z)"
+    ]
 
-    combined_text = "\n".join([s[1] for s in sections])
-    lines = [line.strip("- ").strip() for line in combined_text.split("\n") if line.strip()]
+    for pattern in section_patterns:
+        sections = re.findall(pattern, cleaned_summary, flags=re.DOTALL | re.IGNORECASE)
+        if sections:
+            break
 
-    return lines
+    if sections:
+        combined_text = "\n".join([s[1] for s in sections])
+        lines = [line.strip("- ").strip() for line in combined_text.split("\n") if line.strip()]
+        if lines:
+            return lines
+
+    bullet_points = re.findall(r"(?:\n\s*[•\-*\d+\.]\s*)(.*?)(?=\n\s*[•\-*\d+\.]\s*|\Z)", cleaned_summary,
+                               flags=re.DOTALL)
+    if bullet_points:
+        lines = [line.strip() for line in bullet_points if line.strip()]
+        if lines:
+            return lines
+
+    gap_lines = []
+    for line in cleaned_summary.split("\n"):
+        line = line.strip()
+        if line and any(keyword in line.lower() for keyword in ["gap", "missing", "lack", "need", "require"]):
+            gap_lines.append(line)
+    if gap_lines:
+        return gap_lines
+
+    all_lines = [line.strip() for line in cleaned_summary.split("\n") if line.strip()]
+    return all_lines[:10] if all_lines else ["No gap information found in summary"]
+
 
 # function to create embeddings
 def embed_gaps(gap_lines: list[str]):
@@ -182,6 +209,7 @@ def score_labeled_clusters(labeled_clusters: dict) -> dict:
 def generate_gap_score(summary_text: str) -> dict:
     try:
         gap_lines = extract_gap_lines(summary_text)
+
         if not gap_lines:
             return {}
 
@@ -197,7 +225,7 @@ def generate_gap_score(summary_text: str) -> dict:
         return score_labeled_clusters(labeled_clusters)
     except Exception as e:
         logging.error(e)
-        return {"Experience": 0, "Domain Knowledge": 0, "Soft Skills": 0, "Technical": 0}
+        return {"Experience": 25, "Domain Knowledge": 25, "Soft Skills": 25, "Technical": 25}
 
 # function to generate gap summary of user
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
