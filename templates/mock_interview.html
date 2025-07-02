@@ -265,18 +265,7 @@
       </div>
     </div>
   </footer>
-
-  <script>
-    // Load conversation from local storage when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        const savedConversation = localStorage.getItem('mockInterviewConversation');
-        if (savedConversation) {
-            const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML = savedConversation;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-    });
-
+<script>
     function toggleMenu() {
       const menu = document.getElementById("mobileMenu");
       menu.classList.toggle("hidden");
@@ -307,7 +296,6 @@
         bubble.innerHTML = '<span class="typing">Typing...</span>';
       } else {
         if (sender === "assistant") {
-          // Structured formatting
           const paragraphs = text.split(/(?<=[.?!])\s+(?=[A-Z])/g);
           bubble.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');
         } else {
@@ -318,9 +306,6 @@
       msgDiv.appendChild(bubble);
       chatBox.appendChild(msgDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
-
-      // Save conversation to local storage
-      localStorage.setItem('mockInterviewConversation', chatBox.innerHTML);
 
       return bubble;
     }
@@ -349,10 +334,6 @@
         typingBubble.innerHTML = data.response
           ? data.response.split(/(?<=[.?!])\s+(?=[A-Z])/g).map(p => `<p>${p}</p>`).join('')
           : "Sorry, something went wrong.";
-
-        // Save conversation to local storage after response
-        const chatBox = document.getElementById("chatBox");
-        localStorage.setItem('mockInterviewConversation', chatBox.innerHTML);
       } catch (err) {
         console.error(err);
         typingBubble.innerHTML = "<p>Error connecting to the assistant.</p>";
@@ -366,7 +347,6 @@
       }
     });
 
-    // Toggle nav menu on hamburger (list icon)
     navToggleBtn.addEventListener('click', () => {
       mobileMenu.classList.toggle('hidden');
       toggleHistorySidebar(false);
@@ -389,5 +369,127 @@
       });
     });
 </script>
+
+<!--<script>-->
+<!--    // Load conversation from session storage when page loads-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--        const savedConversation = sessionStorage.getItem('mockInterviewConversation');-->
+<!--        if (savedConversation) {-->
+<!--            const chatBox = document.getElementById('chatBox');-->
+<!--            chatBox.innerHTML = savedConversation;-->
+<!--            chatBox.scrollTop = chatBox.scrollHeight;-->
+<!--        }-->
+<!--    });-->
+
+<!--    function toggleMenu() {-->
+<!--      const menu = document.getElementById("mobileMenu");-->
+<!--      menu.classList.toggle("hidden");-->
+<!--    }-->
+
+<!--    function confirmLogout() {-->
+<!--      if (confirm("Are you sure you want to logout?")) {-->
+<!--        window.location.href = "/logout";-->
+<!--      }-->
+<!--    }-->
+
+<!--    function appendMessage(sender, text, isTyping = false) {-->
+<!--      const chatBox = document.getElementById("chatBox");-->
+<!--      const msgDiv = document.createElement("div");-->
+<!--      msgDiv.className = `message ${sender}`;-->
+
+<!--      const avatar = document.createElement("img");-->
+<!--      avatar.src = sender === "user"-->
+<!--        ? "https://i.pravatar.cc/40?img=3"-->
+<!--        : "https://img.icons8.com/emoji/48/robot-emoji.png";-->
+<!--      avatar.className = "avatar";-->
+<!--      msgDiv.appendChild(avatar);-->
+
+<!--      const bubble = document.createElement("div");-->
+<!--      bubble.className = "bubble";-->
+
+<!--      if (isTyping) {-->
+<!--        bubble.innerHTML = '<span class="typing">Typing...</span>';-->
+<!--      } else {-->
+<!--        if (sender === "assistant") {-->
+<!--          const paragraphs = text.split(/(?<=[.?!])\s+(?=[A-Z])/g);-->
+<!--          bubble.innerHTML = paragraphs.map(p => `<p>${p}</p>`).join('');-->
+<!--        } else {-->
+<!--          bubble.textContent = text;-->
+<!--        }-->
+<!--      }-->
+
+<!--      msgDiv.appendChild(bubble);-->
+<!--      chatBox.appendChild(msgDiv);-->
+<!--      chatBox.scrollTop = chatBox.scrollHeight;-->
+
+<!--      // Save conversation to session storage-->
+<!--      sessionStorage.setItem('mockInterviewConversation', chatBox.innerHTML);-->
+
+<!--      return bubble;-->
+<!--    }-->
+
+<!--    async function handleMessage() {-->
+<!--      const input = document.getElementById("userInput");-->
+<!--      const difficulty = document.getElementById("difficulty").value;-->
+<!--      const text = input.value.trim();-->
+<!--      if (!text) return;-->
+
+<!--      appendMessage("user", text);-->
+<!--      input.value = "";-->
+
+<!--      const typingBubble = appendMessage("assistant", "", true);-->
+
+<!--      try {-->
+<!--        const res = await fetch("/mock_interview", {-->
+<!--          method: "POST",-->
+<!--          headers: {-->
+<!--            "Content-Type": "application/json"-->
+<!--          },-->
+<!--          body: JSON.stringify({ query: text, difficulty: difficulty })-->
+<!--        });-->
+
+<!--        const data = await res.json();-->
+<!--        typingBubble.innerHTML = data.response-->
+<!--          ? data.response.split(/(?<=[.?!])\s+(?=[A-Z])/g).map(p => `<p>${p}</p>`).join('')-->
+<!--          : "Sorry, something went wrong.";-->
+
+<!--        // Save conversation to session storage after response-->
+<!--        const chatBox = document.getElementById("chatBox");-->
+<!--        sessionStorage.setItem('mockInterviewConversation', chatBox.innerHTML);-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        typingBubble.innerHTML = "<p>Error connecting to the assistant.</p>";-->
+<!--      }-->
+<!--    }-->
+
+<!--    document.getElementById("userInput").addEventListener("keypress", function (e) {-->
+<!--      if (e.key === "Enter") {-->
+<!--        e.preventDefault();-->
+<!--        handleMessage();-->
+<!--      }-->
+<!--    });-->
+
+<!--    navToggleBtn.addEventListener('click', () => {-->
+<!--      mobileMenu.classList.toggle('hidden');-->
+<!--      toggleHistorySidebar(false);-->
+<!--    });-->
+
+<!--    // Animation on scroll-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--      const observer = new IntersectionObserver((entries) => {-->
+<!--        entries.forEach(entry => {-->
+<!--          if (entry.isIntersecting) {-->
+<!--            entry.target.classList.add('animate-fade-in-up');-->
+<!--          }-->
+<!--        });-->
+<!--      }, {-->
+<!--        threshold: 0.1-->
+<!--      });-->
+
+<!--      document.querySelectorAll('.resume-item, #resumeForm').forEach(el => {-->
+<!--        observer.observe(el);-->
+<!--      });-->
+<!--    });-->
+<!--</script>-->
 </body>
 </html>
