@@ -9,6 +9,7 @@ flask_login
 flask-cors
 flask_mail
 flask-wtf
+hf_xet
 itsdangerous
 jupyter
 jose
@@ -17,3 +18,4 @@ langchain_groq
 langchain_community
 openai
 pypdf
+sentence_transformers

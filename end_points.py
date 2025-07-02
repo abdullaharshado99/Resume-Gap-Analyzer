@@ -193,7 +193,7 @@ def result(data_id):
     record = session.query(Data).filter_by(id=data_id, user_id=current_user.id).first()
 
     if record:
-        gap_score = generate_gap_score(record.resume_data, record.job_description)
+        gap_score = generate_gap_score(record.summary)
         record.resume_match_score = gap_score
         session.commit()
         return render_template("response.html", data=record.summary, gap_data=gap_score)
@@ -249,9 +249,6 @@ def process():
         )
         session.add(new_data)
         session.commit()
-        # print(f"The {parsed_data=}")
-        # print(f"The {summary=}")
-        # print(f"The {gap_score=}")
 
         return redirect(url_for('result', data_id=new_data.id))
 
