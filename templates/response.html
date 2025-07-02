@@ -355,32 +355,37 @@
 
         // Register the center text plugin before creating the chart
         const centerTextPlugin = {
-            id: 'centerText',
-            afterDraw(chart) {
-                const { ctx, chartArea: { left, right, top, bottom, width, height } } = chart;
-                ctx.restore();
-
-                // Calculate average score
-                const total = Object.values(gapScoreData).reduce((a, b) => a + b, 0);
-                const average = Math.round(total / Object.values(gapScoreData).length);
-
-                // Calculate exact center
-                const centerX = (left + right) / 2;
-                const centerY = (top + bottom) / 2;
-
-                // Draw "Overall" text (larger font)
-                ctx.font = 'bold 20px Poppins';
-                ctx.textBaseline = 'middle';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#4f46e5';
-                ctx.fillText('Overall', centerX, centerY - 15);  // 15px above center
-
-                // Draw percentage text (even larger font)
-                ctx.font = 'bold 30px Poppins';
-                ctx.fillText(`${average}%`, centerX, centerY + 20);  // 20px below center
-                ctx.save();
+          id: 'centerText',
+          afterDraw(chart) {
+            const tooltip = chart.tooltip;
+            if (tooltip && tooltip._active && tooltip._active.length) {
+              // Hide center text while tooltip is active
+              return;
             }
+
+            const { ctx, chartArea: { left, right, top, bottom } } = chart;
+            ctx.save();
+
+            const total = Object.values(gapScoreData).reduce((a, b) => a + b, 0);
+            const average = Math.round(total / Object.values(gapScoreData).length);
+
+            const centerX = (left + right) / 2;
+            const centerY = (top + bottom) / 2;
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#4f46e5';
+
+            ctx.font = 'bold 20px Poppins';
+            ctx.fillText('Overall', centerX, centerY - 15);
+
+            ctx.font = 'bold 30px Poppins';
+            ctx.fillText(`${average}%`, centerX, centerY + 20);
+
+            ctx.restore();
+          }
         };
+
 
         // Create the pie chart
         const pieChart = new Chart(ctx, {
