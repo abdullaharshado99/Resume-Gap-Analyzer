@@ -27,6 +27,7 @@ def get_session():
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
+login_manager.login_view = 'admin-signin'
 
 
 # Flask-Mail config
@@ -89,7 +90,7 @@ def interview_guide():
     return render_template("interview_guide.html")
 
 @app.route('/admin')
-def admin_dashboard():
+def dashboard():
     return render_template("admin_dashboard.html")
 
 @app.route('/admin-homepage')
@@ -439,11 +440,11 @@ def admin_signin():
 
     return render_template('admin_signin.html')
 
-@app.route('/announcements', methods=['GET', 'POST'])
+@app.route('/admin-dashboard', methods=['GET', 'POST'])
 @login_required
-def announcements():
-    session = get_session()
+def admin_dashboard():
 
+    session = get_session()
     if request.method == 'POST':
         message = request.form.get('message')
         if message:
@@ -451,11 +452,33 @@ def announcements():
             session.add(ann)
             session.commit()
             flash("Announcement posted.", "success")
-        return redirect(url_for('announcements'))
+        return redirect(url_for('admin_dashboard'))
 
     all_ann = session.query(Announcement).order_by(Announcement.created_at.desc()).all()
-    print(f"The {all_ann=}")
     return render_template('admin_dashboard.html', announcements=all_ann)
+
+
+
+@app.route('/delete-announcement/<int:ann_id>', methods=['POST'])
+@login_required
+def delete_announcement(ann_id):
+    session = get_session()
+    try:
+        announcement = session.query(Announcement).get(ann_id)
+        if announcement:
+            session.delete(announcement)
+            session.commit()
+            flash('Announcement deleted.', 'success')
+        else:
+            flash('Announcement not found.', 'danger')
+    except Exception as e:
+        logging.error(e)
+        flash('Error deleting announcement.', 'danger')
+        session.rollback()
+    finally:
+        session.close()
+    return redirect(url_for('admin_dashboard'))  # or your announcements view
+
 
 
 @app.route('/logout')

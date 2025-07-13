@@ -148,7 +148,7 @@
   <main class="max-w-3xl mx-auto z-10 relative">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">Manage Announcements</h1>
 
-    <form action="/announcements" method="POST" class="mb-8 bg-white p-4 rounded shadow">
+    <form action="/admin-dashboard" method="POST" class="mb-8 bg-white p-4 rounded shadow">
       <textarea name="message" placeholder="Enter new announcement..." required
         class="w-full p-3 border rounded"></textarea>
       <button type="submit"
@@ -156,16 +156,25 @@
     </form>
 
     <h2 class="text-xl font-semibold mb-4 text-gray-800">All Announcements</h2>
+
     <ul class="space-y-3">
       {% for ann in announcements %}
-      <li class="p-4 bg-white border-l-4 border-indigo-500 rounded shadow-sm">
-        <p>{{ ann.message }}</p>
-        <small class="text-sm text-gray-500">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      <li class="p-4 bg-white border-l-4 border-indigo-500 rounded shadow-sm flex justify-between items-center">
+        <div>
+          <p>{{ ann.message }}</p>
+          <small class="text-sm text-gray-500">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+        <form method="POST" action="{{ url_for('delete_announcement', ann_id=ann.id) }}" onsubmit="return confirmDelete();" class="ml-4">
+          <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+            <i class="bi bi-trash-fill"></i> Delete
+          </button>
+        </form>
       </li>
       {% else %}
       <p class="text-gray-500">No announcements found.</p>
       {% endfor %}
     </ul>
+
   </main>
 
   <!-- Footer -->
@@ -199,6 +208,9 @@
   </footer>
 
   <script>
+    function confirmDelete() {
+      return confirm("Are you sure you want to delete this announcement?");
+    }
     function toggleMenu() {
       const menu = document.getElementById("mobileMenu");
       menu.classList.toggle("hidden");
