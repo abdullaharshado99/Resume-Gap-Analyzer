@@ -6,7 +6,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from flask import session as flask_session
-from models import engine, Session, User, bcrypt, Base, Data
+from models import engine, Session, User, bcrypt, Base, Data, Admin, Announcement
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from pipeline import extract_text_from_doc, generate_gap_summary, generate_gap_score, mock_interview
@@ -27,6 +27,7 @@ def get_session():
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
+login_manager.login_view = 'admin-signin'
 
 
 # Flask-Mail config
@@ -54,7 +55,9 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    return render_template("home_page.html")
+    session = Session()
+    announcement = session.query(Announcement).order_by(Announcement.created_at.desc()).limit(3).all()
+    return render_template('home_page.html', announcements=announcement)
 
 
 @app.route('/terms')
@@ -85,6 +88,14 @@ def tips():
 @app.route('/interview_guide')
 def interview_guide():
     return render_template("interview_guide.html")
+
+@app.route('/admin')
+def dashboard():
+    return render_template("admin_dashboard.html")
+
+@app.route('/admin-homepage')
+def admin_homepage():
+    return render_template("admin_homepage.html")
 
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -351,11 +362,136 @@ def signin():
 
     return render_template('sign_in.html')
 
+@app.route('/admin-signup', methods=['GET', 'POST'])
+def admin_signup():
+    if request.method == 'POST':
+        firstname = request.form.get('firstname', '').strip()
+        lastname = request.form.get('lastname', '').strip()
+        admin = request.form.get('admin', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        if not all([firstname, lastname, admin, email, password]):
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('admin_signup'))
+
+        session = get_session()
+        try:
+            existing_admin = session.query(Admin).filter(
+                (Admin.email == email) | (Admin.admin == admin)
+            ).first()
+
+            if existing_admin:
+                if existing_admin.email == email:
+                    flash('Email already registered.', 'danger')
+                else:
+                    flash('Admin already registered.', 'danger')
+                return redirect(url_for('admin_signup'))
+
+            new_admin = Admin(
+                firstname=firstname,
+                lastname=lastname,
+                admin=admin,
+                email=email
+            )
+            new_admin.set_password(password)
+            session.add(new_admin)
+            session.commit()
+            flash('Account created successfully! Please log in.', 'success')
+            return redirect(url_for('admin_signin'))
+        except Exception as e:
+            logging.error(e)
+            session.rollback()
+            flash('An error occurred during registration. Please try again.', 'danger')
+            return redirect(url_for('admin_signup'))
+        finally:
+            session.close()
+
+    return render_template('admin_signup.html')
+
+@app.route('/admin-signin', methods=['GET', 'POST'])
+def admin_signin():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
+
+        if not email or not password:
+            flash('Both email and password are required.', 'danger')
+            return redirect(url_for('admin_signin'))
+
+        session = get_session()
+        try:
+            admin = session.query(Admin).filter_by(email=email).first()
+
+            if admin and admin.check_password(password):
+                login_user(admin)
+                next_page = request.args.get('next')
+                flash('Logged in successfully!', 'success')
+                return redirect(next_page or url_for('admin_dashboard'))
+            else:
+                flash('Invalid email or password.', 'danger')
+                return redirect(url_for('admin_signin'))
+        except Exception as e:
+            logging.error(e)
+            flash('An error occurred during login. Please try again.', 'danger')
+            return redirect(url_for('admin_signin'))
+        finally:
+            session.close()
+
+    return render_template('admin_signin.html')
+
+@app.route('/admin-dashboard', methods=['GET', 'POST'])
+@login_required
+def admin_dashboard():
+
+    session = get_session()
+    if request.method == 'POST':
+        message = request.form.get('message')
+        if message:
+            ann = Announcement(message=message)
+            session.add(ann)
+            session.commit()
+            flash("Announcement posted.", "success")
+        return redirect(url_for('admin_dashboard'))
+
+    all_ann = session.query(Announcement).order_by(Announcement.created_at.desc()).all()
+    return render_template('admin_dashboard.html', announcements=all_ann)
+
+
+
+@app.route('/delete-announcement/<int:ann_id>', methods=['POST'])
+@login_required
+def delete_announcement(ann_id):
+    session = get_session()
+    try:
+        announcement = session.query(Announcement).get(ann_id)
+        if announcement:
+            session.delete(announcement)
+            session.commit()
+            flash('Announcement deleted.', 'success')
+        else:
+            flash('Announcement not found.', 'danger')
+    except Exception as e:
+        logging.error(e)
+        flash('Error deleting announcement.', 'danger')
+        session.rollback()
+    finally:
+        session.close()
+    return redirect(url_for('admin_dashboard'))  # or your announcements view
+
+
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route('/admin-logout')
+@login_required
+def admin_logout():
+    logout_user()
+    return redirect(url_for('admin_homepage'))
 
 if __name__ == '__main__':
     with app.app_context():

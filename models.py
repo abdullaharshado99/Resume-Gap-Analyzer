@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+from sqlalchemy import DateTime
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
@@ -37,6 +39,25 @@ class User(Base, UserMixin):
     def __repr__(self):
         return f"<User {self.username}, {self.email}>"
 
+class Admin(Base, UserMixin):
+    __tablename__ = 'admin'
+
+    id = Column(Integer, primary_key=True)
+    firstname = Column(String, nullable=False)
+    lastname = Column(String, nullable=False)
+    admin = Column(String(150), nullable=False)
+    email = Column(String(150), unique=True, nullable=False)
+    password = Column(String(256), nullable=False)
+
+    def set_password(self, raw_password):
+        self.password = bcrypt.generate_password_hash(raw_password).decode('utf-8')
+
+    def check_password(self, raw_password):
+        return bcrypt.check_password_hash(self.password, raw_password)
+
+    def __repr__(self):
+        return f"<User {self.admin}, {self.email}>"
+
 class Data(Base):
     __tablename__ = 'users_data'
 
@@ -54,6 +75,16 @@ class Data(Base):
 
     def __repr__(self):
         return f"<Data for User ID {self.user}>"
+
+class Announcement(Base):
+    __tablename__ = 'announcements'
+
+    id = Column(Integer, primary_key=True)
+    message = Column(String(1000), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Announcement {self.id}: {self.message}>"
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)
