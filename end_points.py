@@ -27,7 +27,7 @@ def get_session():
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
-login_manager.login_view = 'admin-signin'
+login_manager.login_view = 'admin_signin'
 
 
 # Flask-Mail config
@@ -96,6 +96,21 @@ def dashboard():
 @app.route('/admin-homepage')
 def admin_homepage():
     return render_template("admin_homepage.html")
+
+@app.route('/user-management')
+@login_required
+def user_management():
+    return render_template("user_management.html")
+
+@app.route('/admin-add-new-user')
+@login_required
+def add_new_user():
+    return render_template("admin_add_new_user.html")
+
+@app.route('/admin-delete-exist-user')
+@login_required
+def del_user():
+    return render_template("admin_delete_user.html")
 
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -479,7 +494,84 @@ def delete_announcement(ann_id):
         session.close()
     return redirect(url_for('admin_dashboard'))  # or your announcements view
 
+@app.route('/admin-add-user', methods=['POST', 'GET'])
+@login_required
+def admin_add_user():
+    if request.method == 'POST':
+        firstname = request.form.get('firstname', '').strip()
+        lastname = request.form.get('lastname', '').strip()
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '').strip()
 
+        if not all([firstname, lastname, username, email, password]):
+            flash('All fields are required.', 'danger')
+
+        session = get_session()
+        try:
+            existing_user = session.query(User).filter(
+                (User.email == email) | (User.username == username)
+            ).first()
+
+            if existing_user:
+                if existing_user.email == email:
+                    flash('Email already registered.', 'danger')
+                else:
+                    flash('Username already taken.', 'danger')
+                return redirect(url_for('add_new_user'))
+
+            new_user = User(
+                firstname=firstname,
+                lastname=lastname,
+                username=username,
+                email=email
+            )
+            new_user.set_password(password)
+            session.add(new_user)
+            session.commit()
+            flash('User Added successfully!', 'success')
+            return redirect(url_for('add_new_user'))
+        except Exception as e:
+            logging.error(e)
+            session.rollback()
+            flash('An error occurred during registration. Please try again.', 'danger')
+            return redirect(url_for('add_new_user'))
+        finally:
+            session.close()
+
+    return redirect(url_for('add_new_user'))
+
+
+@app.route('/admin-delete-user', methods=['GET', 'POST'])
+@login_required
+def admin_delete_user():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+
+        session = get_session()
+        try:
+            if not username:
+                flash('Username is required', 'danger')
+                return redirect(url_for('del_user'))
+
+            user_to_delete = session.query(User).filter_by(username=username).first()
+
+            if not user_to_delete:
+                flash('User not found!', 'danger')
+                return redirect(url_for('del_user'))
+
+            session.delete(user_to_delete)
+            session.commit()
+            flash('User deleted successfully!', 'success')
+            return redirect(url_for('del_user'))
+        except Exception as e:
+            logging.error(e)
+            session.rollback()
+            flash('An error occurred during deletion. Please try again.', 'danger')
+        finally:
+            session.close()
+
+    return redirect(url_for('del_user'))
 
 @app.route('/logout')
 @login_required

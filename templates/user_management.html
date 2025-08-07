@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard - AI Career Assistant</title>
+  <title>User Management - AI Career Assistant</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -144,45 +144,20 @@
     </div>
   </header>
 
-  <div class="absolute top-[100px] right-6">
-    <a href="/user-management" class="bg-indigo-600 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow hover:bg-indigo-700 transition">
-      User Management
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto mt-10">
+  <div class="flex flex-col md:flex-row justify-center gap-6">
+    <!-- Add New User Button -->
+    <a href="/admin-add-new-user" class="bg-indigo-600 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow hover:bg-indigo-700 transition">
+      <i class="bi bi-person-plus mr-2"></i> Add New User
+    </a>
+
+    <!-- Delete User Button -->
+    <a href="/admin-delete-exist-user" class="bg-red-600 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow hover:bg-red-700 transition">
+      <i class="bi bi-person-dash mr-2"></i> Delete User
     </a>
   </div>
-
-  <!-- Main Content -->
-  <main class="max-w-3xl mx-auto z-10 relative">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Manage Announcements</h1>
-
-    <form action="/admin-dashboard" method="POST" class="mb-8 bg-white p-4 rounded shadow">
-      <textarea name="message" placeholder="Enter new announcement..." required
-        class="w-full p-3 border rounded"></textarea>
-      <button type="submit"
-        class="mt-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Post Announcement</button>
-    </form>
-
-    <h2 class="text-xl font-semibold mb-4 text-gray-800">All Announcements</h2>
-
-    <ul class="space-y-3">
-      {% for ann in announcements %}
-      <li class="p-4 bg-white border-l-4 border-indigo-500 rounded shadow-sm flex justify-between items-center">
-        <div>
-          <p>{{ ann.message }}</p>
-          <small class="text-sm text-gray-500">{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-        </div>
-        <form method="POST" action="{{ url_for('delete_announcement', ann_id=ann.id) }}" onsubmit="return confirmDelete();" class="ml-4">
-          <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
-            <i class="bi bi-trash-fill"></i> Delete
-          </button>
-        </form>
-      </li>
-      {% else %}
-      <p class="text-gray-500">No announcements found.</p>
-      {% endfor %}
-    </ul>
-
-  </main>
-
+</main>
   <!-- Footer -->
   <footer class="bg-indigo-900 text-white py-8 mt-auto">
     <div class="max-w-7xl mx-auto px-6">
@@ -214,9 +189,6 @@
   </footer>
 
   <script>
-    function confirmDelete() {
-      return confirm("Are you sure you want to delete this announcement?");
-    }
     function toggleMenu() {
       const menu = document.getElementById("mobileMenu");
       menu.classList.toggle("hidden");
