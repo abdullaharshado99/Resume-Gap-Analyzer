@@ -1,24 +1,32 @@
 import os
 import re
+import json
 import logging
+import warnings
 from markupsafe import Markup
 from dotenv import load_dotenv
 from models import Session, Data
 from sklearn.cluster import KMeans
 from langchain_groq import ChatGroq
 from flask_login import current_user
+from typing import TypedDict, List, Dict
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
+from langchain.agents import initialize_agent, Tool
 from langchain_core.runnables import RunnableConfig
 from sentence_transformers import SentenceTransformer
+from langchain_community.utilities import SerpAPIWrapper
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_community.chat_message_histories import FileChatMessageHistory
 from langchain_community.document_loaders import (PyPDFLoader, TextLoader, Docx2txtLoader)
 
+warnings.filterwarnings("ignore")
+
 load_dotenv()
 
 groq_api_key = os.getenv('lang-graph-api')
+serapi_api_key = os.getenv('SERPAPI_API_KEY')
 
 # code block for printing colorful logging
 LOG_COLORS = {
@@ -226,6 +234,109 @@ def generate_gap_score(summary_text: str) -> dict:
     except Exception as e:
         logging.error(e)
         return {"Experience": 25, "Domain Knowledge": 25, "Soft Skills": 25, "Technical": 25}
+
+
+
+def jobs_search(query: str) -> str:
+    search = SerpAPIWrapper(serpapi_api_key=serapi_api_key)
+    raw_results = search.run(f"Current job openings for: {query}")
+
+    try:
+        results = json.loads(raw_results)
+    except:
+        results = format_job_results(raw_results)
+
+    top_results = results[:3] if isinstance(results, list) else [results]
+
+    formatted_output = []
+    for job in top_results:
+        formatted_job = {
+            "Role": job.get("title", "Role not specified"),
+            "Company": job.get("company", "Company not specified"),
+            "Description": job.get("description", "Description not available")
+        }
+        formatted_output.append(formatted_job)
+
+    return json.dumps(formatted_output, indent=2)
+
+
+def format_job_results(raw_text: str) -> List[Dict]:
+    jobs = []
+    entries = raw_text.split("\n\n") if "\n\n" in raw_text else [raw_text]
+
+    for entry in entries:
+        lines = [line.strip() for line in entry.split("\n") if line.strip()]
+        if len(lines) >= 3:
+            job = {
+                "title": lines[0],
+                "company": lines[1],
+                "description": " ".join(lines[2:])
+            }
+            jobs.append(job)
+        elif lines:
+            job = {
+                "title": "Job Opportunity",
+                "company": "Company not specified",
+                "description": " ".join(lines)
+            }
+            jobs.append(job)
+
+    return jobs if jobs else [{"title": "Job", "company": "Company", "description": raw_text}]
+
+
+def get_jobs_for_resume(resume_data: str) -> str:
+    tools = [
+        Tool(
+            name="Jobs_Search",
+            func=jobs_search,
+            description="Finds the best and most similar jobs according to the provided resume data. Input should be the resume text."
+        )
+    ]
+
+    agent = initialize_agent(
+        tools,
+        llm_model,
+        agent="zero-shot-react-description",
+        verbose=True,
+        handle_parsing_errors=True
+    )
+
+    prompt = f"""
+    Analyze this resume and find the top 3 most suitable job opportunities:
+    {resume_data}
+
+    For each job, provide the following details in JSON format:
+    - Role: The job title
+    - Company: The company name
+    - Description: The job description
+
+    Use the Jobs_Search tool with the entire resume text as input to find matching jobs.
+    Return only the formatted JSON output with the 3 best matching jobs.
+    """
+    # prompt = f"""
+    # Analyze this resume and find the top 3 most suitable job opportunities:
+    # {resume_data}
+    #
+    # Use the Jobs_Search tool with the entire resume text as input to find matching jobs.
+    # Return ONLY the JSON output with the 3 best matching jobs in this exact format:
+    # [
+    #   {{
+    #     "Role": "job title",
+    #     "Company": "company name",
+    #     "Description": "job description"
+    #   }},
+    #   ...
+    # ]"""
+
+    try:
+        result = agent.run(prompt)
+        # start = result.find('[')
+        # end = result.rfind(']') + 1
+        # if start != -1 and end != -1:
+        #     return result[start:end]
+        return result
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 # function to generate gap summary of user
 def generate_gap_summary(parsed_data: str, job_desc: str) -> str|bool:
