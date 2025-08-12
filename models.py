@@ -91,5 +91,7 @@ if __name__ == '__main__':
 
     session = Session()
     session.query(Data).delete()
+    session.query(Admin).delete()
+    session.query(Announcement).delete()
     session.query(User).delete()
     session.commit()
