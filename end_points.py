@@ -35,7 +35,7 @@ app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=587,
     MAIL_USE_TLS=True,
-    MAIL_USERNAME='abdullaharshado99@gmail.com',
+    MAIL_USERNAME='someone@gmail.com',
     MAIL_PASSWORD=os.getenv('email_pass')
 )
 
